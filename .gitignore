@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store  # For macOS users
+.vscode/   # If you're using Visual Studio Code and want to exclude its config files
+.ipynb_checkpoints/  # If using Jupyter Notebooks
