@@ -4,3 +4,13 @@ __pycache__/
 .DS_Store  # For macOS users
 .vscode/   # If you're using Visual Studio Code and want to exclude its config files
 .ipynb_checkpoints/  # If using Jupyter Notebooks
+
+githubkey
+githubkey.pub
+test.dat
+test002.dat
+test003.dat
+test004.dat
+test01.dat
+test02.dat
+test2.dat
