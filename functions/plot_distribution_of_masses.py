@@ -12,12 +12,10 @@ import pandas as pd
 from .decode_history import decode_history
 import config
 
-
-
 def plot_distribution_of_masses(x_column, y_column):
     
-    data=config.data
-    k_values=config.k_values
+    data = config.data
+    k_values = config.k_values
     
     if x_column not in data.columns or y_column not in data.columns:
         print(f"Error: Columns '{x_column}' or '{y_column}' not found in data.")
@@ -32,11 +30,35 @@ def plot_distribution_of_masses(x_column, y_column):
     selected_ks = input("Enter the k values to include (comma-separated) or press Enter to include all: ").strip()
     
     if selected_ks:
-        selected_ks = [int(k.strip()) for k in selected_ks.split(',')]
-        filtered_data = data[(data['ik1'].isin(selected_ks)) | (data['ik2'].isin(selected_ks))]
-    else:
-        filtered_data = data.copy()
+       selected_ks = [int(k.strip()) for k in selected_ks.split(',')]
     
+    # Handling the case where either ik1 or ik2 is zero
+       filtered_data = data[
+        ((data['ik1'].isin(selected_ks)) & (data['ik1'] != 0)) | 
+        ((data['ik2'].isin(selected_ks)) & (data['ik2'] != 0))
+    ]
+
+    # For rows where ik1 or ik2 is 0, check the ikb value and mass columns
+       if 0 in selected_ks:
+               ikb_zero_mask = data['ikb'] == 0
+        
+        # Identify where ik1 is 0 and sm1 is 0 (then set ik1 to NaN)
+               ik1_zero_mask = (data['ik1'] == 0) & ~ikb_zero_mask & (data['sm1'] == 0)
+               data.loc[ik1_zero_mask, 'ik1'] = np.nan
+
+        # Identify where ik2 is 0 and sm2 is 0 (then set ik2 to NaN)
+               ik2_zero_mask = (data['ik2'] == 0) & ~ikb_zero_mask & (data['sm2'] == 0)
+               data.loc[ik2_zero_mask, 'ik2'] = np.nan
+
+        # Create a mask for rows where either ik1 or ik2 was set to NaN
+               zero_inclusion_mask = ik1_zero_mask | ik2_zero_mask
+
+        # Append the rows where ik1 or ik2 is zero and mass is zero (now NaN)
+               filtered_data = pd.concat([filtered_data, data[zero_inclusion_mask]])
+
+    else:
+            filtered_data = data.copy()
+     
     # Prompt for mass range filter
     mass_min_input = input("Enter the minimum mass (optional): ").strip()
     mass_max_input = input("Enter the maximum mass (optional): ").strip()
@@ -54,10 +76,10 @@ def plot_distribution_of_masses(x_column, y_column):
     r_max = float(r_max_input) if r_max_input else filtered_data['r'].max()
     filtered_data = filtered_data[(filtered_data['r'] >= r_min) & (filtered_data['r'] <= r_max)]
     
-    # total count of filtered data
+    # Total count of filtered data
     total_count = len(filtered_data)
 
-    # count of each stellar type
+    # Count of each stellar type
     star_type_counts = filtered_data['star_type'].value_counts()
 
     filtered_data.reset_index(drop=True, inplace=True)
@@ -65,7 +87,7 @@ def plot_distribution_of_masses(x_column, y_column):
     # Getting the unique star types to maintain consistent order
     star_type_order = filtered_data['star_type'].unique()
 
-    #list of filled markers 
+    # List of filled markers 
     filled_markers = ['o', 's', 'D', 'v', '^', '<', '>', 'P', '*', 'X', 'h', 'H', 'd']  
     num_needed_markers = len(star_type_order)
     
@@ -75,14 +97,14 @@ def plot_distribution_of_masses(x_column, y_column):
     else:
         extended_markers = filled_markers[:num_needed_markers]
 
-    # custom style dictionary
+    # Custom style dictionary
     custom_style = {star_type: marker for star_type, marker in zip(star_type_order, extended_markers)}
 
-    # custom palette for the plot
+    # Custom palette for the plot
     palette = sns.color_palette("viridis", len(star_type_order))
     custom_palette = {star_type: color for star_type, color in zip(star_type_order, palette)}
 
-    # scatter plot
+    # Scatter plot
     plt.figure(figsize=(12, 8))
     
     scatter_plot = sns.scatterplot(
@@ -97,12 +119,12 @@ def plot_distribution_of_masses(x_column, y_column):
         style_order=star_type_order
     )
     
-    # click event handler function
+    # Click event handler function
     def on_click(event):
         if event.inaxes != scatter_plot.axes:
             return
         
-        # nearest data point to the mouse cursor 
+        # Nearest data point to the mouse cursor 
         distances = np.sqrt((filtered_data[x_column] - event.xdata) ** 2 + (filtered_data[y_column] - event.ydata) ** 2)
         nearest_idx = distances.idxmin()
         nearest_row = filtered_data.iloc[nearest_idx]  
@@ -166,33 +188,10 @@ def plot_distribution_of_masses(x_column, y_column):
     plt.pause(0.1)  # Allow the plot to display
     
     # Prompt user if they want to save the filtered data
-    save_data_prompt = input("Would you like to save the filtered data? (y/n): ").strip().lower()
-    
+    save_data_prompt = input("Would you like to save the filtered data to a CSV file? (y/n): ").strip().lower()
     if save_data_prompt == 'y':
-        file_name = input("Enter the file name to save the data (without extension): ").strip() + '.dat'
-        metadata = f"# Filtered by mass range: [{mass_min}, {mass_max}]\n"
-        metadata += f"# Filtered by radial position range: [{r_min}, {r_max}]\n"
-        metadata += f"# Selected k-values: {selected_ks}\n"
-        metadata += f"# x_column: {x_column}, y_column: {y_column}\n"
-        
-        # Align columns
-        column_widths = [max(len(str(value)) for value in [col] + filtered_data[col].tolist()) + 2 for col in filtered_data.columns]
-        with open(file_name, 'w') as f:
-            f.write("# Metadata\n")
-            f.write(metadata)
-            f.write("# Data\n")
-            
-            # Write column headers with proper alignment
-            for col, width in zip(filtered_data.columns, column_widths):
-                f.write(f"{col.ljust(width)}")
-            f.write('\n')
-            
-            # Write data rows with proper alignment
-            for _, row in filtered_data.iterrows():
-                for col, width in zip(filtered_data.columns, column_widths):
-                    f.write(f"{str(row[col]).ljust(width)}")
-                f.write('\n')
-        
-        print(f"Data saved to {file_name}")
+        file_name = input("Enter the file name (without extension): ").strip() + '.csv'
+        filtered_data.to_csv(file_name, index=False)
+        print(f"Filtered data saved as {file_name}.")
     else:
         print("Data not saved.")

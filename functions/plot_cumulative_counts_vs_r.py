@@ -7,7 +7,43 @@ from .calculate_half_mass_radius import calculate_half_mass_radius
 from .get_luminosity import get_luminosity
 import os
 import datetime
+import numpy as np
 
+def save_data(data, stage_name, metadata=""):
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_name = f"{stage_name}_{timestamp}.dat"
+    
+    # Ensure the 'data_saves' directory exists
+    if not os.path.exists('data_saves'):
+        os.makedirs('data_saves')
+    
+    file_path = os.path.join('data_saves', file_name)
+    
+    # Prepare the data to be saved with aligned columns
+    column_widths = [max(len(str(value)) for value in [col] + data[col].astype(str).tolist()) + 2 for col in data.columns]
+    
+    with open(file_path, 'w') as f:
+        # Write metadata if provided
+        if metadata:
+            f.write("# Metadata\n")
+            f.write(metadata)
+            f.write("\n")
+        
+        f.write("# Data\n")
+        
+        # Write column headers with proper alignment
+        for col, width in zip(data.columns, column_widths):
+            f.write(f"{col.ljust(width)}")
+        f.write('\n')
+        
+        # Write data rows with proper alignment
+        for _, row in data.iterrows():
+            for col, width in zip(data.columns, column_widths):
+                f.write(f"{str(row[col]).ljust(width)}")
+            f.write('\n')
+    
+    print(f"Data saved to {file_path}")
+    
 def plot_cumulative_counts_vs_r():
     data = config.data
     k_values = config.k_values
@@ -29,13 +65,6 @@ def plot_cumulative_counts_vs_r():
         print("Invalid choice. Defaulting to 'both'.")
         include = 'both'
 
-    if include == 'single':
-        filtered_data = data[data['ikb'] == 0]
-    elif include == 'binary':
-        filtered_data = data[data['ikb'] != 0]
-    else:
-        filtered_data = data
-
     print("Available stellar types:")
     for k, stype in k_values.items():
         print(f"{k}: {stype}")
@@ -46,18 +75,130 @@ def plot_cumulative_counts_vs_r():
         valid_types = [int(t.strip()) for t in valid_types_input.split(',')]
     else:
         valid_types = list(k_values.keys())
+    
 
+    if 'ikb' not in data.columns:
+        print("Error: 'ikb' column not found in data, which is required for handling k=0.")
+        return
+
+    # Filter based on the selected include type early on
+    if include == 'single':
+        filtered_data = data[data['ikb'] == 0].copy()
+    elif include == 'binary':
+        filtered_data = data[data['ikb'] != 0].copy()
+    else:  # both
+        filtered_data = data.copy()
+    
+    print("Data before filtering for k values:")
+    print(filtered_data.head()) 
+    # metadata = f"# Data before filtering for k values\n# Timestamp: {datetime.datetime.now().isoformat()}\n"
+    # save_data(filtered_data, "data_before_filtering", metadata)
+    
+
+    # for k=0 (single stars)
+    if 0 in valid_types and include == 'single' :
+        # rows where either sm1 or sm2 is zero 
+        mask = (filtered_data['sm1'] != 0) | (filtered_data['sm2'] != 0)
+
+        # If sm1 is zero, set ik1 to NaN; if sm2 is zero, set ik2 to NaN
+        filtered_data.loc[filtered_data['sm1'] == 0, 'ik1'] = np.nan
+        filtered_data.loc[filtered_data['sm2'] == 0, 'ik2'] = np.nan
+
+        # Apply the mask to only include rows where sm1 or sm2 is non-zero
+        filtered_data = filtered_data[mask]
+        
+        # Before summing, set mass to zero if corresponding stellar type is not in valid_types
+        filtered_data['sm1'] = filtered_data.apply(lambda row: row['sm1'] if row['ik1'] in valid_types else 0, axis=1)
+        filtered_data['sm2'] = filtered_data.apply(lambda row: row['sm2'] if row['ik2'] in valid_types else 0, axis=1)
+        # Combine columns into a new column 'single_mass' by summing the values of 'sm1' and 'sm2' per row
+        filtered_data.loc[:, 'single_mass'] = filtered_data[['sm1', 'sm2']].sum(axis=1)
+
+
+# Drop rows where 'single_mass' is NaN
+        filtered_data = filtered_data.dropna(subset=['single_mass'])
+       
+    
+    # mask to only include rows where 'single_mass' is non-NaN
+        filtered_data = filtered_data[mask]
+    
+    if 0 in valid_types and include == 'binary' :
+        # rows where either sm1 or sm2 is zero 
+        mask = (filtered_data['sm1'] != 0) | (filtered_data['sm2'] != 0)
+
+        # If sm1 is zero, set ik1 to NaN; if sm2 is zero, set ik2 to NaN
+        filtered_data.loc[filtered_data['sm1'] == 0, 'ik1'] = np.nan
+        filtered_data.loc[filtered_data['sm2'] == 0, 'ik2'] = np.nan
+
+        # Apply the mask to only include rows where sm1 or sm2 is non-zero
+        filtered_data = filtered_data[mask]
+        
+        # Before summing, set mass to zero if corresponding stellar type is not in valid_types
+        filtered_data['sm1'] = filtered_data.apply(lambda row: row['sm1'] if row['ik1'] in valid_types else 0, axis=1)
+        filtered_data['sm2'] = filtered_data.apply(lambda row: row['sm2'] if row['ik2'] in valid_types else 0, axis=1)
+        # Combine columns into a new column 'single_mass' by summing the values of 'sm1' and 'sm2' per row
+        filtered_data.loc[:, 'single_mass'] = filtered_data[['sm1', 'sm2']].sum(axis=1)
+
+
+# Drop rows where 'single_mass' is NaN
+        filtered_data = filtered_data.dropna(subset=['single_mass'])
+      
+    
+    # mask to only include rows where 'single_mass' is non-NaN
+        filtered_data = filtered_data[mask]
+        
+    if 0 in valid_types and include == 'both' :
+        # rows where either sm1 or sm2 is zero 
+        mask = (filtered_data['sm1'] != 0) | (filtered_data['sm2'] != 0)
+
+        # If sm1 is zero, set ik1 to NaN; if sm2 is zero, set ik2 to NaN
+        filtered_data.loc[filtered_data['sm1'] == 0, 'ik1'] = np.nan
+        filtered_data.loc[filtered_data['sm2'] == 0, 'ik2'] = np.nan
+        
+        # Before summing, set mass to zero if corresponding stellar type is not in valid_types
+        filtered_data['sm1'] = filtered_data.apply(lambda row: row['sm1'] if row['ik1'] in valid_types else 0, axis=1)
+        filtered_data['sm2'] = filtered_data.apply(lambda row: row['sm2'] if row['ik2'] in valid_types else 0, axis=1)
+        # Apply the mask to only include rows where sm1 or sm2 is non-zero
+        filtered_data = filtered_data[mask]
+    
+        
+        # Combine columns into a new column 'single_mass' by summing the values of 'sm1' and 'sm2' per row
+        filtered_data.loc[:, 'single_mass'] = filtered_data[['sm1', 'sm2']].sum(axis=1)
+
+
+         # Drop rows where 'single_mass' is NaN
+        filtered_data = filtered_data.dropna(subset=['single_mass'])
+        #mask = (~filtered_data['single_mass'].isna())
+    
+        
+    print("Data after handling special case for k=0 (if applicable):")
+    print(filtered_data.head()) 
+    # Save data after handling special case for k=0
+    # metadata = f"# Data after handling special case for k=0\n# Timestamp: {datetime.datetime.now().isoformat()}\n"
+    # save_data(filtered_data, "data_after_handling_k0", metadata)
+    
     filtered_data = filtered_data[
-        (filtered_data['ik1'].isin(valid_types)) |
-        (filtered_data['ik2'].isin(valid_types))
+        (filtered_data['ik1'].isin(valid_types)) | (filtered_data['ik2'].isin(valid_types))
     ]
 
+    print("Data after filtering for selected k values:")
+    print(filtered_data.head()) 
+    #Save data after filtering for k values
+    # metadata = f"# Data after filtering for selected k values\n# Timestamp: {datetime.datetime.now().isoformat()}\n"
+    # save_data(filtered_data, "data_after_filtering", metadata)
+    
+    #half mass radius
     if include == 'single':
-        half_mass_radius = calculate_half_mass_radius(filtered_data, 'sm1')
-    else:
-        filtered_data = filtered_data.copy()
         filtered_data['combined_mass'] = filtered_data['sm1'] + filtered_data['sm2']
-        half_mass_radius = calculate_half_mass_radius(filtered_data, 'combined_mass')
+        #half_mass_radius = calculate_half_mass_radius(filtered_data, 'combined_mass')
+        half_mass_radius = calculate_half_mass_radius(filtered_data, 'single_mass')
+    elif include == 'binary':
+        filtered_data['combined_mass'] = filtered_data['sm1'] + filtered_data['sm2']
+        #half_mass_radius = calculate_half_mass_radius(filtered_data, 'combined_mass')
+        half_mass_radius = calculate_half_mass_radius(filtered_data, 'single_mass')
+    else:  # both
+       #filtered_data['combined_mass'] = filtered_data['sm1'] + filtered_data['sm2']
+       #half_mass_radius = calculate_half_mass_radius(filtered_data, 'combined_mass')
+        half_mass_radius = calculate_half_mass_radius(filtered_data, 'single_mass')
 
     filtered_data['effective_lum'] = filtered_data.apply(
         lambda row: get_luminosity(row['sm1'], row['sm2'], row['lum1'], row['lum2']),
@@ -69,6 +210,7 @@ def plot_cumulative_counts_vs_r():
     print(f"Half-Mass Radius: {half_mass_radius:.2f} pc")
     print(f"Mean Core Radius: {core_radius_mean:.2f} pc")
 
+    # Apply additional filtering based on radial position
     min_radial = input("Enter minimum radial position (pc) or press Enter to skip: ")
     max_radial = input("Enter maximum radial position (pc) or press Enter to skip: ")
 
@@ -84,7 +226,6 @@ def plot_cumulative_counts_vs_r():
         print("No data available for the selected filters.")
         return
 
-    # Check for available x-axis columns
     x_axis_options = ['r'] + [col for col in filtered_data.columns if col.startswith('r/rh')]
     print("Select the x-axis column:")
     for i, option in enumerate(x_axis_options, 1):
@@ -92,37 +233,46 @@ def plot_cumulative_counts_vs_r():
 
     x_column_choice = int(input(f"Enter your choice (1-{len(x_axis_options)}): "))
     x_column = x_axis_options[x_column_choice - 1]
+    
+    # Combine ik1 and ik2 into a single column 'combined_ik'
+    filtered_data['combined_ik'] = filtered_data[['ik1', 'ik2']].apply(lambda x: [val for val in x if pd.notna(val)], axis=1)
+
+    # Explode the list column 'combined_ik' to have one row per stellar type
+    filtered_data = filtered_data.explode('combined_ik')
+
+    # Convert the combined_ik column to an integer for easier filtering later
+    filtered_data['combined_ik'] = filtered_data['combined_ik'].astype(int)
 
     cumulative_counts_df = pd.DataFrame()
-    grouped = filtered_data.groupby([x_column, 'ik1']).size().unstack(fill_value=0)
 
-    print("Grouped DataFrame columns (stellar types):", grouped.columns)
+    # Group by radial position and combined stellar types, and count occurrences
+    grouped = filtered_data.groupby([x_column, 'combined_ik']).size().unstack(fill_value=0)
 
-    for stype, stype_name in k_values.items():
-        if stype in valid_types:
-            if stype in grouped.columns:
-                cumulative_counts = grouped[stype].cumsum()
+# Cumulative sum for each stellar type across all radial positions
+    cumulative_counts_df = grouped.cumsum()
 
-                max_count = cumulative_counts.max()
-                if max_count > 0:
-                    constant_index = cumulative_counts[cumulative_counts == max_count].index[0]
-                    cumulative_counts.loc[constant_index + 1:] = 0
+# Filter to only include valid types
+    cumulative_counts_df = cumulative_counts_df.loc[:, cumulative_counts_df.columns.isin(valid_types)]
 
-                cumulative_counts_df[stype_name] = cumulative_counts
-            else:
-                print(f"Stellar type {stype_name} not present in data.")
-                cumulative_counts_df[stype_name] = pd.Series(index=grouped.index, dtype=float).fillna(0).cumsum()
+# Fill missing stellar types with 0 cumulative count if they don't exist in the data
+    for stype in valid_types:
+       if stype not in cumulative_counts_df.columns:
+        cumulative_counts_df[stype] = 0
+
+# Rename columns to stellar type names
+    cumulative_counts_df.columns = [k_values[stype] for stype in cumulative_counts_df.columns]
+
+# Sort by radial position for proper cumulative plotting
+    cumulative_counts_df = cumulative_counts_df.sort_index()
 
     x_values = cumulative_counts_df.index
-
+    
+    # Start plotting
     plt.figure(figsize=(10, 6))
 
-    for stype_name in cumulative_counts_df.columns:
-        plt.plot(x_values, cumulative_counts_df[stype_name], label=stype_name)
-
-        end_x = x_values[-1]
-        end_y = cumulative_counts_df[stype_name].iloc[-1]
-        plt.text(end_x, end_y, stype_name, fontsize=8, verticalalignment='bottom', horizontalalignment='right')
+# Plot each stellar type's cumulative count as a separate line
+    for column in cumulative_counts_df.columns:
+       plt.plot(x_values, cumulative_counts_df[column], label=f'{column}')
 
     plt.axvline(x=half_mass_radius, color='r', linestyle='--', label=f'Half-Mass Radius: {half_mass_radius:.2f} pc')
     plt.axvline(x=core_radius_mean, color='b', linestyle='--', label=f'Mean Core Radius: {core_radius_mean:.2f} pc')
@@ -132,9 +282,10 @@ def plot_cumulative_counts_vs_r():
     plt.title('Cumulative Counts vs. Radial Position')
     plt.grid(True)
     plt.legend(title='Stellar Type', bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()  
+
     plt.show()
 
-    # Prompt user if they want to save the filtered data
     save_data_prompt = input("Would you like to save the filtered data? (y/n): ").strip().lower()
 
     if save_data_prompt == 'y':
@@ -148,32 +299,31 @@ def plot_cumulative_counts_vs_r():
         metadata += f"# x_column: {x_column}\n"
         metadata += f"# Timestamp: {datetime.datetime.now().isoformat()}\n"
 
-        # Calculate the r/rh column
-        print("calculating r/rh...")
+        if filtered_data.index.duplicated().any():
+            print("Warning: Duplicate index values found. Resetting index.")
+            filtered_data = filtered_data.reset_index(drop=True)
+
+        print("Calculating r/rh...")
         filtered_data['r/rh'] = filtered_data['r'] / half_mass_radius
         if include == 'single':
             data['r/rh(single)'] = filtered_data['r/rh']
         elif include == 'binary':
             data['r/rh(binary)'] = filtered_data['r/rh']
-        elif include == 'both':
+        else:
             data['r/rh(both)'] = filtered_data['r/rh']
 
-        # Merge the cumulative counts with the filtered data
         filtered_data_to_save = filtered_data[[x_column, 'r/rh']].merge(cumulative_counts_df, left_on=x_column, right_index=True)
 
-        # Align columns
         column_widths = [max(len(str(value)) for value in [col] + filtered_data_to_save[col].tolist()) + 2 for col in filtered_data_to_save.columns]
         with open(file_name, 'w') as f:
             f.write("# Metadata\n")
             f.write(metadata)
             f.write("# Data\n")
 
-            # Write column headers with proper alignment
             for col, width in zip(filtered_data_to_save.columns, column_widths):
                 f.write(f"{col.ljust(width)}")
             f.write('\n')
 
-            # Write data rows with proper alignment
             for _, row in filtered_data_to_save.iterrows():
                 for col, width in zip(filtered_data_to_save.columns, column_widths):
                     f.write(f"{str(row[col]).ljust(width)}")
@@ -182,4 +332,5 @@ def plot_cumulative_counts_vs_r():
         print(f"Data saved to {file_name}")
     else:
         print("Data not saved.")
-
+    
+    del filtered_data 

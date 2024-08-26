@@ -28,10 +28,23 @@ def plot_scatter(x_column, y_column, continuous_column=None, color_min=None, col
     
     if selected_ks.strip():
         selected_ks = [int(k.strip()) for k in selected_ks.split(',')]
-        # Filter data to include only selected star types
-        filtered_data = data[data['ik1'].isin(selected_ks) | data['ik2'].isin(selected_ks)]
     else:
-        filtered_data = data
+        selected_ks = list(k_values.keys())
+    
+    if 0 in selected_ks:
+        # Handling k=0 case
+        if 'ikb' not in data.columns:
+            print("Error: 'ikb' column not found in data, which is required for handling k=0.")
+            return
+        
+        filtered_data = data[
+            ((data['ikb'] != 0) & ((data['ik1'].isin(selected_ks)) | (data['ik2'].isin(selected_ks)))) |
+            ((data['ikb'] == 0) & (data['ik1'] != 0) & (data['ik2'] != 0)) & 
+            (data['ik1'].isin([k for k in selected_ks if k != 0]) | data['ik2'].isin([k for k in selected_ks if k != 0]))
+        ]
+        print("The count of low mass main sequence stars : ", len(filtered_data))
+    else:
+        filtered_data = data[data['ik1'].isin(selected_ks) | data['ik2'].isin(selected_ks)]
 
     # Apply filter using the continuous variable column, if provided
     if continuous_column and continuous_column in filtered_data.columns:

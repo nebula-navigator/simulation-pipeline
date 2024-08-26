@@ -14,3 +14,5 @@ test004.dat
 test01.dat
 test02.dat
 test2.dat
+*.dat
+data_saves/
