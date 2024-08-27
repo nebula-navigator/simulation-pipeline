@@ -210,7 +210,7 @@ def plot_cumulative_counts_vs_r():
     print(f"Half-Mass Radius: {half_mass_radius:.2f} pc")
     print(f"Mean Core Radius: {core_radius_mean:.2f} pc")
 
-    # Apply additional filtering based on radial position
+    # additional filtering based on radial position
     min_radial = input("Enter minimum radial position (pc) or press Enter to skip: ")
     max_radial = input("Enter maximum radial position (pc) or press Enter to skip: ")
 
@@ -267,7 +267,6 @@ def plot_cumulative_counts_vs_r():
 
     x_values = cumulative_counts_df.index
     
-    # Start plotting
     plt.figure(figsize=(10, 6))
 
 # Plot each stellar type's cumulative count as a separate line

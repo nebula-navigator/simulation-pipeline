@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Aug 13 11:52:08 2024
-
-@author: sohaib
-"""
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -13,10 +6,9 @@ from .decode_history import decode_history
 import config
 
 def plot_distribution_of_masses(x_column, y_column):
-    
     data = config.data
     k_values = config.k_values
-    
+
     if x_column not in data.columns or y_column not in data.columns:
         print(f"Error: Columns '{x_column}' or '{y_column}' not found in data.")
         return
@@ -25,44 +17,28 @@ def plot_distribution_of_masses(x_column, y_column):
     print("\nAvailable star types (based on k values):")
     for k, v in k_values.items():
         print(f"{k}: {v}")
-
+    
     # Prompt for stellar types to include
     selected_ks = input("Enter the k values to include (comma-separated) or press Enter to include all: ").strip()
     
     if selected_ks:
-       selected_ks = [int(k.strip()) for k in selected_ks.split(',')]
-    
-    # Handling the case where either ik1 or ik2 is zero
-       filtered_data = data[
-        ((data['ik1'].isin(selected_ks)) & (data['ik1'] != 0)) | 
-        ((data['ik2'].isin(selected_ks)) & (data['ik2'] != 0))
-    ]
-
-    # For rows where ik1 or ik2 is 0, check the ikb value and mass columns
-       if 0 in selected_ks:
-               ikb_zero_mask = data['ikb'] == 0
+        selected_ks = [int(k.strip()) for k in selected_ks.split(',')]
+        filtered_data = data[(data['ik1'].isin(selected_ks)) | (data['ik2'].isin(selected_ks))]
         
-        # Identify where ik1 is 0 and sm1 is 0 (then set ik1 to NaN)
-               ik1_zero_mask = (data['ik1'] == 0) & ~ikb_zero_mask & (data['sm1'] == 0)
-               data.loc[ik1_zero_mask, 'ik1'] = np.nan
-
-        # Identify where ik2 is 0 and sm2 is 0 (then set ik2 to NaN)
-               ik2_zero_mask = (data['ik2'] == 0) & ~ikb_zero_mask & (data['sm2'] == 0)
-               data.loc[ik2_zero_mask, 'ik2'] = np.nan
-
-        # Create a mask for rows where either ik1 or ik2 was set to NaN
-               zero_inclusion_mask = ik1_zero_mask | ik2_zero_mask
-
-        # Append the rows where ik1 or ik2 is zero and mass is zero (now NaN)
-               filtered_data = pd.concat([filtered_data, data[zero_inclusion_mask]])
-
+        if 0 in selected_ks:
+            ikb_zero_mask = data['ikb'] == 0
+            ik1_zero_mask = (data['ik1'] == 0) & ~ikb_zero_mask & (data['sm1'] == 0)
+            data.loc[ik1_zero_mask, 'ik1'] = np.nan
+            ik2_zero_mask = (data['ik2'] == 0) & ~ikb_zero_mask & (data['sm2'] == 0)
+            data.loc[ik2_zero_mask, 'ik2'] = np.nan
+            zero_inclusion_mask = ik1_zero_mask | ik2_zero_mask
+            filtered_data = pd.concat([filtered_data, data[zero_inclusion_mask]])
     else:
-            filtered_data = data.copy()
-     
+        filtered_data = data.copy()
+    
     # Prompt for mass range filter
     mass_min_input = input("Enter the minimum mass (optional): ").strip()
     mass_max_input = input("Enter the maximum mass (optional): ").strip()
-    
     mass_min = float(mass_min_input) if mass_min_input else filtered_data[['sm1', 'sm2']].min().min()
     mass_max = float(mass_max_input) if mass_max_input else filtered_data[['sm1', 'sm2']].max().max()
     filtered_data = filtered_data[((filtered_data['sm1'] >= mass_min) & (filtered_data['sm1'] <= mass_max)) | 
@@ -71,7 +47,6 @@ def plot_distribution_of_masses(x_column, y_column):
     # Prompt for radial position filter
     r_min_input = input("Enter the minimum radial position (optional): ").strip()
     r_max_input = input("Enter the maximum radial position (optional): ").strip()
-    
     r_min = float(r_min_input) if r_min_input else filtered_data['r'].min()
     r_max = float(r_max_input) if r_max_input else filtered_data['r'].max()
     filtered_data = filtered_data[(filtered_data['r'] >= r_min) & (filtered_data['r'] <= r_max)]
@@ -124,10 +99,9 @@ def plot_distribution_of_masses(x_column, y_column):
         if event.inaxes != scatter_plot.axes:
             return
         
-        # Nearest data point to the mouse cursor 
         distances = np.sqrt((filtered_data[x_column] - event.xdata) ** 2 + (filtered_data[y_column] - event.ydata) ** 2)
         nearest_idx = distances.idxmin()
-        nearest_row = filtered_data.iloc[nearest_idx]  
+        nearest_row = filtered_data.iloc[nearest_idx]
 
         # Print details
         print(f"\nObject ID: {nearest_row['im']}")
@@ -140,7 +114,6 @@ def plot_distribution_of_masses(x_column, y_column):
         if abs(nearest_row['idd1'] - nearest_row['idd2']) == 1:
             print("This object is a primordial binary.")
         
-        # Decoding and displaying hist1 and hist2 in a DataFrame
         hist1_decoded = decode_history(nearest_row['hist1'])
         hist2_decoded = decode_history(nearest_row['hist2'])
         
@@ -158,14 +131,13 @@ def plot_distribution_of_masses(x_column, y_column):
     plt.gcf().canvas.mpl_connect('button_press_event', on_click)
     
     # Adjusting legend to include counts
+    handles, labels = scatter_plot.get_legend_handles_labels()
     plt.legend(
+        handles=handles, 
+        labels=[f'{label} ({star_type_counts.get(label, 0)})' for label in labels], 
         loc='upper left', 
-        bbox_to_anchor=(1, 1), 
-        title='Star Type', 
-        title_fontsize='13', 
-        fontsize='11',
-        labels=[f'{star_type} ({star_type_counts[star_type]})' for star_type in star_type_order],
-        handles=scatter_plot.legend_.legendHandles  # Use the correct legend handles
+        bbox_to_anchor=(1, 1),
+        title='Star Type'
     )
     
     # Adding the mass, radial pos range, and total count information
@@ -183,15 +155,36 @@ def plot_distribution_of_masses(x_column, y_column):
     plt.xlabel(x_column)
     plt.ylabel(y_column)
     plt.grid(True)
-    plt.tight_layout(rect=[0, 0, 0.8, 1])  # You can adjust this layout to make room for the legend
-    plt.show(block=False)
-    plt.pause(0.1)  # Allow the plot to display
-    
+    plt.tight_layout(rect=[0, 0, 0.8, 1])
+    plt.show()
+
     # Prompt user if they want to save the filtered data
-    save_data_prompt = input("Would you like to save the filtered data to a CSV file? (y/n): ").strip().lower()
+    save_data_prompt = input("Would you like to save the filtered data? (y/n): ").strip().lower()
     if save_data_prompt == 'y':
-        file_name = input("Enter the file name (without extension): ").strip() + '.csv'
-        filtered_data.to_csv(file_name, index=False)
-        print(f"Filtered data saved as {file_name}.")
+        file_name = input("Enter the file name to save the data (without extension): ").strip() + '.dat'
+        metadata = f"# Filtered by mass range: [{mass_min}, {mass_max}]\n"
+        metadata += f"# Filtered by radial position range: [{r_min}, {r_max}]\n"
+        metadata += f"# Selected k-values: {selected_ks}\n"
+        metadata += f"# x_column: {x_column}, y_column: {y_column}\n"
+
+        # Align columns
+        column_widths = [max(len(str(value)) for value in [col] + filtered_data[col].tolist()) + 2 for col in filtered_data.columns]
+        with open(file_name, 'w') as f:
+            f.write("# Metadata\n")
+            f.write(metadata)
+            f.write("# Data\n")
+
+            # Write column headers with proper alignment
+            for col, width in zip(filtered_data.columns, column_widths):
+                f.write(f"{col.ljust(width)}")
+            f.write('\n')
+
+            # Write data rows with proper alignment
+            for _, row in filtered_data.iterrows():
+                for col, width in zip(filtered_data.columns, column_widths):
+                    f.write(f"{str(row[col]).ljust(width)}")
+                f.write('\n')
+
+        print(f"Data saved to {file_name}")
     else:
         print("Data not saved.")
