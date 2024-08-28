@@ -108,6 +108,7 @@ def plot_distribution_of_masses(x_column, y_column):
         print(f"System Components: {nearest_row['star_type']}")
         print(f"ID1: {nearest_row['idd1']}, ID2: {nearest_row['idd2']}")
         print(f"Mass of first component: {nearest_row['sm1']} M_sun, Mass of second component: {nearest_row['sm2']} M_sun")
+        print(f"Temperature of first component: {nearest_row['temp1']}K, Temperature of second component: {nearest_row['temp2']}K")
         print(f"Eccentricity: {nearest_row['e']}")
         print(f"Semi-Major Axis: {nearest_row['a']} Rsun")
         

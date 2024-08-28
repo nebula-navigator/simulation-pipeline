@@ -12,6 +12,7 @@ from .plot_cumulative_number_vs_stellar_types import plot_cumulative_number_vs_s
 from .plot_position_vs_stellar_type import plot_position_vs_stellar_type
 from .plot_cumulative_counts_vs_r import plot_cumulative_counts_vs_r
 from .plot_distribution_of_masses import plot_distribution_of_masses
+from .plothr import plothr
 import config
 
 
@@ -33,7 +34,8 @@ def suggest_visualizations():
         print("11. Position vs Stellar Type (radial distribution of each stellar type")
         print("12. Stellar type distribution by mass and radial position. A powerful plot for multiple distribution analysis")
         print("13. Cumulative sum of each stellar type vs radial position line plot (suggested plot from reference thesis)")
-        print("14. Return to Main Menu")
+        print("14. Plot HR diagram")
+        print("15. Return to Main Menu")
 
         viz_choice = input("Enter your choice (1-14): ")
 
@@ -85,6 +87,8 @@ def suggest_visualizations():
         elif viz_choice == '13':
             plot_cumulative_counts_vs_r()
         elif viz_choice == '14':
+            plothr()
+        elif viz_choice == '15':
             break
         else:
             print("Invalid choice. Please enter a number between 1 and 14.")
