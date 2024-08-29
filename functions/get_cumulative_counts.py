@@ -30,9 +30,10 @@ def get_cumulative_counts(include='both'):
 
         for stype, count in single_stars_ik1.items():
             cumulative_counts[stype] += count
+        #print("low mass main sequence ik1:",cumulative_counts[0])
         for stype, count in single_stars_ik2.items():
             cumulative_counts[stype] += count
-
+        #print("low mass main sequence ik2:",cumulative_counts[0])
     binary_data = data[data['ikb'] != 0]
     
     binary_data = binary_data.reset_index(drop=True)
@@ -51,8 +52,10 @@ def get_cumulative_counts(include='both'):
 
     for stype, count in binary_stars_ik1.items():
         cumulative_counts[stype] += count
+    #print("low mass main sequence ik1 (binary):",cumulative_counts[0])
     for stype, count in binary_stars_ik2.items():
         cumulative_counts[stype] += count
+    #print("low mass main sequence ik2 (binary):",cumulative_counts[0])
 
     # Convert cumulative counts to a DataFrame
     cumulative_df = pd.DataFrame(list(cumulative_counts.items()), columns=['Stellar Type', 'Cumulative Count'])

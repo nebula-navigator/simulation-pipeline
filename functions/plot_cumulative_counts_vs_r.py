@@ -96,7 +96,7 @@ def plot_cumulative_counts_vs_r():
     
 
     # for k=0 (single stars)
-    if 0 in valid_types and include == 'single' :
+    if 0 in valid_types or include == 'single' :
         # rows where either sm1 or sm2 is zero 
         mask = (filtered_data['sm1'] != 0) | (filtered_data['sm2'] != 0)
 
@@ -105,11 +105,11 @@ def plot_cumulative_counts_vs_r():
         filtered_data.loc[filtered_data['sm2'] == 0, 'ik2'] = np.nan
 
         # Apply the mask to only include rows where sm1 or sm2 is non-zero
-        filtered_data = filtered_data[mask]
+       # filtered_data = filtered_data[mask]
         
         # Before summing, set mass to zero if corresponding stellar type is not in valid_types
-        filtered_data['sm1'] = filtered_data.apply(lambda row: row['sm1'] if row['ik1'] in valid_types else 0, axis=1)
-        filtered_data['sm2'] = filtered_data.apply(lambda row: row['sm2'] if row['ik2'] in valid_types else 0, axis=1)
+        #filtered_data['sm1'] = filtered_data.apply(lambda row: row['sm1'] if row['ik1'] in valid_types else 0, axis=1)
+        #filtered_data['sm2'] = filtered_data.apply(lambda row: row['sm2'] if row['ik2'] in valid_types else 0, axis=1)
         # Combine columns into a new column 'single_mass' by summing the values of 'sm1' and 'sm2' per row
         filtered_data.loc[:, 'single_mass'] = filtered_data[['sm1', 'sm2']].sum(axis=1)
 
@@ -121,7 +121,7 @@ def plot_cumulative_counts_vs_r():
     # mask to only include rows where 'single_mass' is non-NaN
         filtered_data = filtered_data[mask]
     
-    if 0 in valid_types and include == 'binary' :
+    if 0 in valid_types or include == 'binary' :
         # rows where either sm1 or sm2 is zero 
         mask = (filtered_data['sm1'] != 0) | (filtered_data['sm2'] != 0)
 
@@ -130,11 +130,11 @@ def plot_cumulative_counts_vs_r():
         filtered_data.loc[filtered_data['sm2'] == 0, 'ik2'] = np.nan
 
         # Apply the mask to only include rows where sm1 or sm2 is non-zero
-        filtered_data = filtered_data[mask]
+        #filtered_data = filtered_data[mask]
         
         # Before summing, set mass to zero if corresponding stellar type is not in valid_types
-        filtered_data['sm1'] = filtered_data.apply(lambda row: row['sm1'] if row['ik1'] in valid_types else 0, axis=1)
-        filtered_data['sm2'] = filtered_data.apply(lambda row: row['sm2'] if row['ik2'] in valid_types else 0, axis=1)
+        #filtered_data['sm1'] = filtered_data.apply(lambda row: row['sm1'] if row['ik1'] in valid_types else 0, axis=1)
+        #filtered_data['sm2'] = filtered_data.apply(lambda row: row['sm2'] if row['ik2'] in valid_types else 0, axis=1)
         # Combine columns into a new column 'single_mass' by summing the values of 'sm1' and 'sm2' per row
         filtered_data.loc[:, 'single_mass'] = filtered_data[['sm1', 'sm2']].sum(axis=1)
 
@@ -146,7 +146,7 @@ def plot_cumulative_counts_vs_r():
     # mask to only include rows where 'single_mass' is non-NaN
         filtered_data = filtered_data[mask]
         
-    if 0 in valid_types and include == 'both' :
+    if 0 in valid_types or include == 'both' :
         # rows where either sm1 or sm2 is zero 
         mask = (filtered_data['sm1'] != 0) | (filtered_data['sm2'] != 0)
 
@@ -155,10 +155,10 @@ def plot_cumulative_counts_vs_r():
         filtered_data.loc[filtered_data['sm2'] == 0, 'ik2'] = np.nan
         
         # Before summing, set mass to zero if corresponding stellar type is not in valid_types
-        filtered_data['sm1'] = filtered_data.apply(lambda row: row['sm1'] if row['ik1'] in valid_types else 0, axis=1)
-        filtered_data['sm2'] = filtered_data.apply(lambda row: row['sm2'] if row['ik2'] in valid_types else 0, axis=1)
+        #filtered_data['sm1'] = filtered_data.apply(lambda row: row['sm1'] if row['ik1'] in valid_types else 0, axis=1)
+        #filtered_data['sm2'] = filtered_data.apply(lambda row: row['sm2'] if row['ik2'] in valid_types else 0, axis=1)
         # Apply the mask to only include rows where sm1 or sm2 is non-zero
-        filtered_data = filtered_data[mask]
+        #filtered_data = filtered_data[mask]
     
         
         # Combine columns into a new column 'single_mass' by summing the values of 'sm1' and 'sm2' per row
@@ -173,8 +173,8 @@ def plot_cumulative_counts_vs_r():
     print("Data after handling special case for k=0 (if applicable):")
     print(filtered_data.head()) 
     # Save data after handling special case for k=0
-    # metadata = f"# Data after handling special case for k=0\n# Timestamp: {datetime.datetime.now().isoformat()}\n"
-    # save_data(filtered_data, "data_after_handling_k0", metadata)
+    #metadata = f"# Data after handling special case for k=0\n# Timestamp: {datetime.datetime.now().isoformat()}\n"
+    #save_data(filtered_data, "data_after_handling_k0", metadata)
     
     filtered_data = filtered_data[
         (filtered_data['ik1'].isin(valid_types)) | (filtered_data['ik2'].isin(valid_types))

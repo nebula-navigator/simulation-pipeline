@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import config
-
+import pandas as pd
 
 
 def plot_scatter(x_column, y_column, continuous_column=None, color_min=None, color_max=None, categorical_column=None):
@@ -26,25 +26,18 @@ def plot_scatter(x_column, y_column, continuous_column=None, color_min=None, col
     
     selected_ks = input("Enter the k values to include (comma-separated) or press Enter to include all: ")
     
-    if selected_ks.strip():
+    if selected_ks:
         selected_ks = [int(k.strip()) for k in selected_ks.split(',')]
+        filtered_data = data[(data['ik1'].isin(selected_ks)) | (data['ik2'].isin(selected_ks))]
     else:
         selected_ks = list(k_values.keys())
     
     if 0 in selected_ks:
-        # Handling k=0 case
-        if 'ikb' not in data.columns:
-            print("Error: 'ikb' column not found in data, which is required for handling k=0.")
-            return
-        
-        filtered_data = data[
-            ((data['ikb'] != 0) & ((data['ik1'].isin(selected_ks)) | (data['ik2'].isin(selected_ks)))) |
-            ((data['ikb'] == 0) & (data['ik1'] != 0) & (data['ik2'] != 0)) & 
-            (data['ik1'].isin([k for k in selected_ks if k != 0]) | data['ik2'].isin([k for k in selected_ks if k != 0]))
-        ]
-        print("The count of low mass main sequence stars : ", len(filtered_data))
-    else:
-        filtered_data = data[data['ik1'].isin(selected_ks) | data['ik2'].isin(selected_ks)]
+        # If sm1 is zero, set ik1 to NaN; if sm2 is zero, set ik2 to NaN
+        filtered_data.loc[filtered_data['sm1'] == 0, 'ik1'] = np.nan
+        filtered_data.loc[filtered_data['sm2'] == 0, 'ik2'] = np.nan
+
+   
 
     # Apply filter using the continuous variable column, if provided
     if continuous_column and continuous_column in filtered_data.columns:
