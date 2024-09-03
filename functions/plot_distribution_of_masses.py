@@ -5,8 +5,8 @@ import pandas as pd
 from .decode_history import decode_history
 import config
 
-def plot_distribution_of_masses(x_column, y_column):
-    data = config.data
+def plot_distribution_of_masses(current_data,x_column, y_column):
+    data = current_data
     k_values = config.k_values
 
     if x_column not in data.columns or y_column not in data.columns:

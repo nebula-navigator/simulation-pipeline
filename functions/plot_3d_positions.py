@@ -11,8 +11,8 @@ import config
 
 
 
-def plot_3d_positions(color_column=None, color_min=None, color_max=None):
-    data=config.data
+def plot_3d_positions(current_data,color_column=None, color_min=None, color_max=None):
+    data=current_data
     k_values=config.k_values
     if 'r' not in data.columns:
         print("Error: Column 'r' not found in data.")

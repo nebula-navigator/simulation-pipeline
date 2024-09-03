@@ -20,4 +20,5 @@ plot_position_vs_stellar_types.py
 plot_scatter_3d.py
 plot_scatter.py
 plot_violin.py
+plothr.py
 suggest_visualizations.py

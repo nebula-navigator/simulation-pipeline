@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import config
 
-def get_cumulative_counts(include='both'):
+def get_cumulative_counts(data,include='both'):
     if include != 'both':
         raise ValueError("This function is designed to work only with 'both' option.")
 

@@ -5,8 +5,12 @@ Created on Tue Aug 13 12:02:51 2024
 
 @author: sohaib
 """
+import matplotlib.pyplot as plt
+import config
+import seaborn as sns
 
-def plot_event_frequencies(column_name):
+def plot_event_frequencies(current_data,column_name):
+    data=current_data
     if column_name not in data.columns:
         print(f"Error: Column '{column_name}' not found in data.")
         return

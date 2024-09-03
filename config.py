@@ -7,7 +7,7 @@ Created on Tue Aug 13 15:50:38 2024
 """
 
 # Initialize data and k_values as None
-data = None
+data= None
 # k value dictionary
 k_values = {
     0: 'Low-mass main-sequence star',

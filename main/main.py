@@ -7,13 +7,6 @@ Created on Tue Aug 13 12:03:46 2024
 """
 import sys
 import os
-
-# Add the project_root directory to the Python path
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-print("Project root path:", project_root)
-
-sys.path.append(project_root)
-
 import pandas as pd
 import numpy as np
 import config
@@ -37,13 +30,13 @@ from functions import (
     calculate_half_mass_radius,
     decode_history,
     get_cumulative_counts,
-    
 )
 
 from functions.suggest_visualizations import suggest_visualizations
 
-
-
+# Global dictionary to store dataframes
+data_dict = {}
+current_data = None
 column_names = [
     "im", "r", "vr", "vt", "u", "ikb", "a", "e", "ik1", "ik2", "sm1", "sm2", 
     "popId1", "popId2", "timenr", "idd1", "idd2", "lum1", "lum2", "rad1", 
@@ -71,7 +64,7 @@ config.k_values = {
     15: 'Massless supernova'
 }
 
-k_values=config.k_values
+k_values = config.k_values
 
 def classify_stars(row):
     """Classify stars based on ik1 and ik2 values."""
@@ -86,11 +79,13 @@ def classify_stars(row):
             star_types.append(k_values.get(row['ik2'], 'Unknown'))
     return ', '.join(star_types) if star_types else 'Unknown'
 
-# Data load function
 def load_data(file_path):
-    global data
+    """Load data from a file and store it in the global dictionary."""
+    file_key = os.path.basename(file_path)  # Use filename as the key
     data = pd.read_csv(file_path, names=column_names, delim_whitespace=True)
-    config.data=data
+    config.data = data
+
+    
     # Calculate projected positions if 'r' column is available
     if 'r' in data.columns:
         r = data['r'].values
@@ -121,55 +116,106 @@ def load_data(file_path):
             rpy.append(rpy_val)
             rpz.append(rpz_val)
         
-        data['x'] = rpx
-        data['y'] = rpy
-        data['z'] = rpz
+        # Prefix column names with the file key
+        data[f'x_{file_key}'] = rpx
+        data[f'y_{file_key}'] = rpy
+        data[f'z_{file_key}'] = rpz
         
-    # Calculate and display cumulative counts / This is the dataframe that is displayed as soon as the file loads
-    include = 'both'  # Default to 'both'
+    
+    include = 'both'  
     cumulative_df = get_cumulative_counts(include)
     
     # cumulative counts DataFrame
     print("\nCumulative Counts DataFrame:")
     print(cumulative_df)
+    
     # star_type column based on ik1 and ik2
     data['star_type'] = data.apply(classify_stars, axis=1)
     
-    return data
+    # Store the dataframe in the global dictionary
+    data_dict[file_key] = data
+    
+    return file_key
+
+def list_data_files():
+    """List all data files currently loaded."""
+    if not data_dict:
+        print("\nNo data files loaded.")
+    else:
+        print("\nLoaded data files:")
+        for index, file_name in enumerate(data_dict.keys(), start=1):
+            print(f"{index}. {file_name}")
+
+def select_data_file():
+    """Prompt the user to select a data file from the loaded ones."""
+    list_data_files()
+    if data_dict:
+        try:
+            choice = int(input("\nSelect a data file by number: "))
+            file_name = list(data_dict.keys())[choice - 1]
+            print(f"Selected file: {file_name}")
+            global current_data
+            current_data = data_dict[file_name]  # Update current_data based on user selection
+            return file_name
+        except (IndexError, ValueError):
+            print("Invalid choice. Please enter a valid number.")
+            return None
+    return None
 
 
+def main_menu():
+    global current_data
+    while True:
+        print("\nMain Menu:")
+        print("1. Load Data Files")
+        print("2. List Loaded Data Files")
+        print("3. Select Data File for Operations")
+        print("4. Suggest Visualization Types")
+        print("5. Exit")
+        
+        choice = input("Enter your choice (1-5): ")
+        
+        if choice == '1':
+            file_input = input("Enter the paths to data files, separated by commas: ")
+            file_paths = [path.strip() for path in file_input.split(',')]
+            for file_path in file_paths:
+                if os.path.exists(file_path):
+                    file_key = load_data(file_path)
+                    print(f"Data loaded successfully from: {file_path}")
+                else:
+                    print(f"File not found: {file_path}")
+            print("\nData loading complete.")
+            
+            # Prompt user to select the data file right after loading
+            if data_dict:
+                print("\nPlease select a data file to work with:")
+                select_data_file()
+                
+        elif choice == '2':
+            list_data_files()
+        elif choice == '3':
+            file_name = select_data_file()
+            if file_name:
+                # Perform operations on the selected data file
+                data = data_dict[file_name]  # Use the selected file's data
+                list_columns(data)
+        elif choice == '4':
+            if current_data is not None:
+                suggest_visualizations(current_data)
+            else:
+                print("No data file selected. Please load and select a data file first.")
+        elif choice == '5':
+            print("Exiting the program.")
+            break
+        else:
+            print("Invalid choice. Please enter a number between 1 and 5.")
 
-def list_columns():
+
+def list_columns(data):
+    """List columns for the currently selected data."""
     print("\nAvailable columns for plotting:")
     for index, name in enumerate(data.columns, start=1):
         print(f"{index}. {name}")
 
-def main_menu():
-    while True:
-        print("\nMain Menu:")
-        print("1. Load Data")
-        print("2. List Available Columns for Plotting")
-        print("3. Suggest Visualization Types")
-        print("4. Exit")
-        
-        choice = input("Enter your choice (1-4): ")
-        
-        if choice == '1':
-            file_path = input("Enter the path to the data file: ")
-            global data
-            data = load_data(file_path)
-            print("Data loaded successfully.")
-        elif choice == '2':
-            list_columns()
-        elif choice == '3':
-            suggest_visualizations()
-        elif choice == '4':
-            print("Exiting the program.")
-            break
-        else:
-            print("Invalid choice. Please enter a number between 1 and 4.")
-
-
-
-main_menu()
-
+if __name__ == "__main__":
+    main_menu()

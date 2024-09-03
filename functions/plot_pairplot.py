@@ -11,8 +11,8 @@ import config
 
 
 
-def plot_pairplot(columns_list):
-    data=config.data
+def plot_pairplot(current_data,columns_list):
+    data=current_data
     k_values=config.k_values
     if any(col not in data.columns for col in columns_list):
         print("Error: One or more columns not found in data.")

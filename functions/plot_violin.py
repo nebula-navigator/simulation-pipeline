@@ -12,8 +12,8 @@ import config
 
 
 
-def plot_violin(column_name):
-    data=config.data
+def plot_violin(column_name,current_data):
+    data=current_data
     if column_name not in data.columns:
         print(f"Error: Column '{column_name}' not found in data.")
         return

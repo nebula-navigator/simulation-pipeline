@@ -12,8 +12,8 @@ import config
 
 
 
-def plot_cumulative_number_vs_stellar_types(include):
-    data=config.data
+def plot_cumulative_number_vs_stellar_types(current_data,include):
+    data=current_data
     k_values=config.k_values
     include = include.lower()
     valid_includes = ['single', 'binary', 'both']

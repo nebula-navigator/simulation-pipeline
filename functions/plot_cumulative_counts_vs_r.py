@@ -44,8 +44,8 @@ def save_data(data, stage_name, metadata=""):
     
     print(f"Data saved to {file_path}")
     
-def plot_cumulative_counts_vs_r():
-    data = config.data
+def plot_cumulative_counts_vs_r(current_data):
+    data = current_data
     k_values = config.k_values
     include_options = ['single', 'binary', 'both']
     

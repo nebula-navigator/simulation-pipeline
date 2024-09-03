@@ -9,10 +9,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import config
 
-data=config.data
-k_values=config.k_values
 
-def plot_position_vs_stellar_type():
+
+def plot_position_vs_stellar_type(current_data):
+    data=current_data
+    k_values=config.k_values
     include = input("Include 'single', 'binary', or 'both' stars: ").strip().lower()
     valid_includes = ['single', 'binary', 'both']
     

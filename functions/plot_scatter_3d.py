@@ -11,8 +11,8 @@ import config
 
 
 
-def plot_scatter_3d(x_column, y_column, z_column, color_column=None):
-    data=config.data
+def plot_scatter_3d(x_column, y_column, z_column,current_data, color_column=None):
+    data=current_data
     if x_column not in data.columns or y_column not in data.columns or z_column not in data.columns:
         print(f"Error: Columns '{x_column}', '{y_column}', or '{z_column}' not found in data.")
         return

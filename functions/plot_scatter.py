@@ -12,8 +12,8 @@ import config
 import pandas as pd
 
 
-def plot_scatter(x_column, y_column, continuous_column=None, color_min=None, color_max=None, categorical_column=None):
-    data=config.data
+def plot_scatter(x_column, y_column, current_data, continuous_column=None, color_min=None, color_max=None, categorical_column=None):
+    data=current_data
     k_values=config.k_values
     if x_column not in data.columns or (y_column != 'cumulative_count' and y_column not in data.columns):
         print(f"Error: Columns '{x_column}' or '{y_column}' not found in data.")
