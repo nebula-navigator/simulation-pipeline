@@ -108,14 +108,14 @@ def plot_cumulative_vs_r(data_files, x_axis_column):
 
     # Create a single consolidated legend outside the plots
     handles, labels = ax.get_legend_handles_labels()
-    fig.legend(handles, labels, title='Stellar Types', loc='upper right', bbox_to_anchor=(1.1, 1.0))
+    fig.legend(handles, labels, title='Stellar Types', loc='upper right', bbox_to_anchor=(1.0, 1.0))
 
     # Hide any unused subplots
     for j in range(i + 1, len(axes)):
         fig.delaxes(axes[j])
 
     # Adjust layout to make room for the legend
-    plt.tight_layout(rect=[0, 0, 0, 1])  # Adjust the right side to make room for the legend
+    #plt.tight_layout(rect=[0, 0, 0, 1])  # Adjust the right side to make room for the legend
     plt.show()
 
 if __name__ == "__main__":
