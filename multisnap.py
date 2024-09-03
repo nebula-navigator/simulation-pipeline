@@ -25,7 +25,7 @@ y_columns = [
 def load_data(file_path):
     """Load data from a .dat file with tab delimiter and extract the half-mass radius."""
     try:
-        # Read the first few lines to get metadata including the half-mass radius
+    
         with open(file_path, 'r') as file:
             lines = file.readlines()
         
@@ -115,8 +115,8 @@ def plot_cumulative_vs_r(data_files, x_axis_column):
     for j in range(i + 1, len(axes)):
         fig.delaxes(axes[j])
 
-    # Adjust layout to make room for the legend
-    #plt.tight_layout(rect=[0, 0, 0, 1])  # Adjust the right side to make room for the legend
+    
+    #plt.tight_layout(rect=[0, 0, 0, 1])  
     plt.show()
 
 if __name__ == "__main__":
