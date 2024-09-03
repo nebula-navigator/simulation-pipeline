@@ -289,14 +289,16 @@ def plot_cumulative_counts_vs_r(current_data):
 
     if save_data_prompt == 'y':
         file_name = input("Enter the file name to save the data (without extension): ").strip() + '.dat'
-        metadata = f"# Selected star inclusion: {include}\n"
-        metadata += f"# Selected stellar types: {valid_types}\n"
-        metadata += f"# Half-Mass Radius: {half_mass_radius:.2f} pc\n"
-        metadata += f"# Mean Core Radius: {core_radius_mean:.2f} pc\n"
-        metadata += f"# Minimum radial position: {min_radial}\n"
-        metadata += f"# Maximum radial position: {max_radial}\n"
-        metadata += f"# x_column: {x_column}\n"
-        metadata += f"# Timestamp: {datetime.datetime.now().isoformat()}\n"
+        metadata = {
+            'Selected star inclusion': include,
+            'Selected stellar types': valid_types,
+            'Half-Mass Radius': f"{half_mass_radius:.2f} pc",
+            'Mean Core Radius': f"{core_radius_mean:.2f} pc",
+            'Minimum radial position': min_radial,
+            'Maximum radial position': max_radial,
+            'x_column': x_column,
+            'Timestamp': datetime.datetime.now().isoformat()
+        }
 
         if filtered_data.index.duplicated().any():
             print("Warning: Duplicate index values found. Resetting index.")
@@ -305,31 +307,26 @@ def plot_cumulative_counts_vs_r(current_data):
         print("Calculating r/rh...")
         filtered_data['r/rh'] = filtered_data['r'] / half_mass_radius
         if include == 'single':
-            data['r/rh(single)'] = filtered_data['r/rh']
+            filtered_data['r/rh(single)'] = filtered_data['r/rh']
         elif include == 'binary':
-            data['r/rh(binary)'] = filtered_data['r/rh']
+            filtered_data['r/rh(binary)'] = filtered_data['r/rh']
         else:
-            data['r/rh(both)'] = filtered_data['r/rh']
+            filtered_data['r/rh(both)'] = filtered_data['r/rh']
 
         filtered_data_to_save = filtered_data[[x_column, 'r/rh']].merge(cumulative_counts_df, left_on=x_column, right_index=True)
 
-        column_widths = [max(len(str(value)) for value in [col] + filtered_data_to_save[col].tolist()) + 2 for col in filtered_data_to_save.columns]
+        # Save the data to a .dat file with tab delimiter
         with open(file_name, 'w') as f:
+            # Write metadata
             f.write("# Metadata\n")
-            f.write(metadata)
-            f.write("# Data\n")
+            for key, value in metadata.items():
+                f.write(f"# {key}: {value}\n")
 
-            for col, width in zip(filtered_data_to_save.columns, column_widths):
-                f.write(f"{col.ljust(width)}")
-            f.write('\n')
-
-            for _, row in filtered_data_to_save.iterrows():
-                for col, width in zip(filtered_data_to_save.columns, column_widths):
-                    f.write(f"{str(row[col]).ljust(width)}")
-                f.write('\n')
+            # Write data
+            filtered_data_to_save.to_csv(f, index=False, sep='\t')  # Use tab delimiter
 
         print(f"Data saved to {file_name}")
     else:
         print("Data not saved.")
-    
-    del filtered_data 
+
+    del filtered_data
