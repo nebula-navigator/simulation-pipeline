@@ -93,7 +93,8 @@ def plot_cumulative_vs_r(data_files, x_axis_column):
                 ax.plot(data[x_axis_column], data[y_column], label=y_column)
             else:
                 print(f"Column {y_column} or {x_axis_column} in file {file_name} is not numeric.")
-
+        
+        ax.set_yscale('log')
         # Add vertical line at the half-mass radius
         ax.axvline(x=half_mass_radius, color='red', linestyle='--', label=f'Half-Mass Radius: {half_mass_radius:.2f} pc')
         
