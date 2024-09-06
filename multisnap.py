@@ -2,30 +2,29 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# List of y-column names provided by you
-y_columns = [
-    'Low-mass main-sequence star',
-    'Main-sequence star',
-    'Hertzsprung-gap star',
-    'First giant branch star',
-    'Core helium burning star',
-    'Early asymptotic giant branch star',
-    'Thermally pulsing asymptotic giant branch star',
-    'Naked helium star MS',
-    'Naked helium star Hertzsprung gap',
-    'Naked helium star giant branch',
-    'Helium white dwarf',
-    'Carbon-oxygen white dwarf',
-    'Oxygen-neon white dwarf',
-    'Neutron star',
-    'Black hole',
-    'Massless supernova'
-]
+# Dictionary of y-column names with keys starting from 0
+y_columns = {
+    0: 'Low-mass main-sequence star',
+    1: 'Main-sequence star',
+    2: 'Hertzsprung-gap star',
+    3: 'First giant branch star',
+    4: 'Core helium burning star',
+    5: 'Early asymptotic giant branch star',
+    6: 'Thermally pulsing asymptotic giant branch star',
+    7: 'Naked helium star MS',
+    8: 'Naked helium star Hertzsprung gap',
+    9: 'Naked helium star giant branch',
+    10: 'Helium white dwarf',
+    11: 'Carbon-oxygen white dwarf',
+    12: 'Oxygen-neon white dwarf',
+    13: 'Neutron star',
+    14: 'Black hole',
+    15: 'Massless supernova'
+}
 
 def load_data(file_path):
     """Load data from a .dat file with tab delimiter and extract the half-mass radius."""
     try:
-    
         with open(file_path, 'r') as file:
             lines = file.readlines()
         
@@ -53,7 +52,7 @@ def load_data(file_path):
         print(f"An error occurred while loading file {file_path}: {e}")
     return None, None
 
-def plot_cumulative_vs_r(data_files, x_axis_column):
+def plot_cumulative_vs_r(data_files, x_axis_column, selected_y_columns):
     """Plot cumulative counts vs. specified x-axis column for each data file."""
     if x_axis_column not in ['r', 'r/rh']:
         raise ValueError("x_axis_column must be 'r' or 'r/rh'")
@@ -80,23 +79,21 @@ def plot_cumulative_vs_r(data_files, x_axis_column):
 
         ax = axes[i]
 
-        # Determine which y_columns are present in the data
-        present_y_columns = [col for col in y_columns if col in data.columns]
-
-        if not present_y_columns:
-            print(f"No y_columns found in file: {file_name}")
-            continue
-
-        # Plot each of the present y_columns
-        for y_column in present_y_columns:
-            if pd.api.types.is_numeric_dtype(data[x_axis_column]) and pd.api.types.is_numeric_dtype(data[y_column]):
-                ax.plot(data[x_axis_column], data[y_column], label=y_column)
+        # Plot each of the selected y_columns that are present in the data
+        for y_key in selected_y_columns:
+            y_column = y_columns[y_key]
+            if y_column in data.columns:
+                if pd.api.types.is_numeric_dtype(data[x_axis_column]) and pd.api.types.is_numeric_dtype(data[y_column]):
+                    ax.plot(data[x_axis_column], data[y_column], label=y_column)
+                else:
+                    print(f"Column {y_column} or {x_axis_column} in file {file_name} is not numeric.")
             else:
-                print(f"Column {y_column} or {x_axis_column} in file {file_name} is not numeric.")
+                print(f"Column {y_column} not found in file {file_name}.")
         
         ax.set_yscale('log')
+        ax.set_xscale('log')
         # Add vertical line at the half-mass radius
-        ax.axvline(x=half_mass_radius, color='red', linestyle='--', label=f'Half-Mass Radius: {half_mass_radius:.2f} pc')
+        ax.axvline(x=half_mass_radius, color='red', linestyle='--', label=f'Half-Mass Radius')
         
         # Annotate the half-mass radius value on the plot
         ymin, ymax = ax.get_ylim()
@@ -115,15 +112,28 @@ def plot_cumulative_vs_r(data_files, x_axis_column):
     for j in range(i + 1, len(axes)):
         fig.delaxes(axes[j])
 
-    
-    #plt.tight_layout(rect=[0, 0, 0, 1])  
     plt.show()
 
 if __name__ == "__main__":
+    # Display the y_column options to the user
+    print("Available stellar types for plotting:")
+    for key, value in y_columns.items():
+        print(f"{key}: {value}")
+
+    # User input for selecting which stellar types to plot
+    selected_columns_input = input("Enter the numbers corresponding to the stellar types you want to plot, separated by commas (press Enter to select all): ")
+    if selected_columns_input.strip() == "":
+        # If no input is provided, select all stellar types
+        selected_y_columns = list(y_columns.keys())
+    else:
+        selected_y_columns = [int(x.strip()) for x in selected_columns_input.split(',')]
+
+    # User input for file paths and x-axis column
     file_input = input("Enter the paths to data files, separated by commas: ")
     data_files = [file.strip() for file in file_input.split(',')]
     x_axis_column = input("Enter the column name for the x-axis ('r' or 'r/rh'): ")
+    
     if x_axis_column not in ['r', 'r/rh']:
         print("Invalid x-axis column. Please enter 'r' or 'r/rh'.")
     else:
-        plot_cumulative_vs_r(data_files, x_axis_column)
+        plot_cumulative_vs_r(data_files, x_axis_column, selected_y_columns)
