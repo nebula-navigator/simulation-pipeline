@@ -2,77 +2,94 @@ import pandas as pd
 import re
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 
-# Ask user for the file path
 file_path = input("Please enter the path to the history file: ")
 
-# Read the file and extract lines
 with open(file_path, 'r') as file:
     history_content = file.readlines()
 
-# Find the line with column names (line 188 in this case)
 column_line = history_content[187].strip()
 
-# Remove the leading `#` symbol and split the rest of the columns
 columns = column_line.lstrip('#').split()
 
-# Replace the incorrect column name `#` with `lineType(1)`
 if columns[0] == '#':
     columns[0] = 'lineType(1)'
 
-# Read the data into a DataFrame, skipping the metadata lines and using the corrected columns
 df = pd.read_csv(file_path, delim_whitespace=True, skiprows=188, comment='#', names=columns)
 
-# Print the head of the DataFrame to check the data
 print("DataFrame Head:")
 print(df)
 
 print("Column Names:")
 print(df.columns.tolist())
-# # Ensure 'eOld' and 'eNew' are treated as floats with scientific notation
-# df['eOld'] = df['eOld'].astype(float)
-# df['eNew'] = df['eNew'].astype(float)
 
-
-
-# Identify points where the mass increased
 df['MassChange'] = df['massNew[Msun]'] - df['massOld[Msun](10)']
-mass_increase_points = df[df['MassChange'] > 0]
+mass_increase_points = df[df['MassChange'] > 0.]
 
-# Set up plot style
-sns.set(style="whitegrid")
+sns.set(style="darkgrid")
 
-# Create a grid for visualizations (2x2 layout)
-fig, axs = plt.subplots(2, 2, figsize=(14, 10))
 
-### Subplot 1: Mass Evolution Over Time with Significant Events
+fig, axs = plt.subplots(3, 2, figsize=(14, 10))
+axs.flatten()
 
+
+axs[0, 0].set_facecolor('black')
+
+
+axs[0, 0].grid(True, color='white', linestyle='-', linewidth=0.5) 
+
+
+legend = axs[0, 0].legend(frameon=True)
+legend.get_frame().set_facecolor('gray')  
+legend.get_frame().set_edgecolor('white')  
+plt.setp(legend.get_texts(), color='white')  
 # Plot mass evolution line
-axs[0, 0].plot(df['time[Myr]'], df['massNew[Msun]'], label='Mass Evolution', color='b')
+axs[0, 0].plot(df['time[Myr]'], df['massNew[Msun]'], label='Mass Evolution', color='w')
 
-# Plot significant mass increase points as solid red points
-increase_points = axs[0, 0].scatter(mass_increase_points['time[Myr]'], 
-                                    mass_increase_points['massNew[Msun]'], 
-                                    color='r', s=1, label='Mass Increase Events', zorder=5)
+ordered_event_types = ['BIN_STAR', 'SIN_EVOL', 'COLLISION', 'BIN_FORM', 'BIN_EVOL', 'BIN_BIN']
 
-# Set labels and title
+marker_styles = {
+    'BIN_STAR': 'o',
+    'SIN_EVOL': 's',
+    'COLLISION': '^',
+    'BIN_FORM': 'P',
+    'BIN_EVOL': 'X',
+    'BIN_BIN': 'D'
+}
+
+unique_event_types = df['lineType(1)'].unique()
+
+additional_event_types = [event for event in unique_event_types if event not in ordered_event_types]
+
+remaining_markers = ['v', '<', '>', '*', 'H', '+']  
+for i, event in enumerate(additional_event_types):
+    marker_styles[event] = remaining_markers[i % len(remaining_markers)]
+
+
+for event_type in ordered_event_types + additional_event_types:
+    event_points = mass_increase_points[mass_increase_points['lineType(1)'] == event_type]
+    axs[0, 0].scatter(event_points['time[Myr]'], event_points['massNew[Msun]'],
+                      marker=marker_styles[event_type], label=f'{event_type}', s=5, zorder=5)
+
+
+
+
 axs[0, 0].set_title("Mass Evolution Over Time with Significant Events")
 axs[0, 0].set_xlabel("Time (Myr)")
 axs[0, 0].set_ylabel("Mass (Msun)")
 axs[0, 0].set_xlim([0, 2000])
-# Add legend
-axs[0, 0].legend()
+axs[0, 0].legend(loc='upper left', bbox_to_anchor=(1, 1))
 
 def on_click(event):
-    if event.inaxes == axs[0, 0]:  # Ensure we're clicking on the correct plot
+    if event.inaxes == axs[0, 0]:  
         # Get the index of the closest point
         closest_index = ((mass_increase_points['time[Myr]'] - event.xdata)**2 + 
                          (mass_increase_points['massNew[Msun]'] - event.ydata)**2).idxmin()
 
-        # Fetch the corresponding row from the DataFrame
+        
         event_info = mass_increase_points.loc[closest_index]
 
-        # Create an elaborated output for this event (displaying all columns)
         output_text = f"""
         Event Information:
         --------------------
@@ -96,10 +113,10 @@ def on_click(event):
         print(output_text)
 
 
-# Connect the click event to the function
+
 fig.canvas.mpl_connect('button_press_event', on_click)
 
-### Subplot 2: Event Type Frequency
+
 
 event_counts = df['lineType(1)'].value_counts()
 sns.barplot(x=event_counts.index, y=event_counts.values, ax=axs[0, 1])
@@ -108,24 +125,126 @@ axs[0, 1].set_xlabel("Event Type")
 axs[0, 1].set_ylabel("Frequency")
 axs[0, 1].tick_params(axis='x', rotation=45)
 
-### Subplot 3: aOld and aNew Over Time
 
-#axs[1, 0].plot(df['time[Myr]'], df['aOld[Rsun]'], label='aOld[Rsun]', color='b')
 axs[1, 0].plot(df['time[Myr]'], df['aNew[Rsun]'], label='aNew[Rsun]', color='r')
 axs[1, 0].set_title("Semi-major Axis Evolution Over Time")
 axs[1, 0].set_xlabel("Time (Myr)")
 axs[1, 0].set_ylabel("Semi-major Axis (Rsun)")
 axs[1, 0].legend()
 
-### Subplot 4: eOld and eNew Over Time
 
-#axs[1, 1].plot(df['time[Myr]'], df['eOld(16)'], label='eOld', color='b')
 axs[1, 1].plot(df['time[Myr]'], df['eNew'], label='eNew', color='r')
 axs[1, 1].set_title("Orbital Eccentricity Evolution Over Time")
 axs[1, 1].set_xlabel("Time (Myr)")
 axs[1, 1].set_ylabel("Orbital Eccentricity")
 axs[1, 1].legend()
 
-# Adjust layout and show the plots
+
+filtered_df = df[df['encCase'] != 0]
+
+unique_enc_cases = sorted(filtered_df['encCase'].unique())
+
+grouped = filtered_df.groupby(['time[Myr]', 'encCase']).size().unstack(fill_value=0)
+
+
+cumulative_counts_df = grouped.cumsum()
+
+
+for enc_case in unique_enc_cases:
+    if enc_case not in cumulative_counts_df.columns:
+        cumulative_counts_df[enc_case] = 0
+
+
+cumulative_counts_df = cumulative_counts_df.sort_index()
+
+x_values = cumulative_counts_df.index  
+
+for enc_case in cumulative_counts_df.columns:
+    y_values = cumulative_counts_df[enc_case]
+    
+  
+    if (grouped[enc_case] > 0).any():
+        last_encounter_time = grouped[enc_case][grouped[enc_case] > 0].index[-1]  
+    else:
+        last_encounter_time = x_values[0]  
+
+    
+    extended_x = np.append(x_values[x_values <= last_encounter_time], last_encounter_time + (x_values[1] - x_values[0]))  # Add a point after the last occurrence
+    extended_y = np.append(y_values[x_values <= last_encounter_time], 0) 
+    
+    
+    axs[2, 0].plot(extended_x, extended_y, label=f'Encounter Case {enc_case}')
+
+
+axs[2, 0].set_title("Cumulative Encounter Cases Over Time")
+axs[2, 0].set_xlabel("Time (Myr)")
+axs[2, 0].set_ylabel("Cumulative Count")
+axs[2, 0].legend(loc='upper left', bbox_to_anchor=(1, 1))
+axs[2, 0].grid(True)
+plt.tight_layout()
+
+
+
+
+mergers_same_binary = 0
+mergers_diff_binary = 0
+double_mergers = 0
+binaries_no_change = 0
+exchanges_single = 0
+exchanges_double = 0
+no_binaries_left = 0
+single_stars_count = 0
+
+
+for enc_case in filtered_df['encCase']:
+    enc_case_str = str(enc_case).zfill(3)  
+    # First digit analysis (mergers)
+    first_digit = int(enc_case_str[0])
+    if first_digit == 1:
+        mergers_same_binary += 1
+    elif first_digit == 3:
+        mergers_diff_binary += 1
+    elif first_digit == 6:
+        double_mergers += 1
+
+    # Second digit analysis (flybys/exchanges)
+    second_digit = int(enc_case_str[1])
+    if second_digit in [1, 2]:
+        binaries_no_change += 1
+    elif second_digit == 3:
+        exchanges_single += 1
+    elif second_digit == 6:
+        exchanges_double += 1
+    elif second_digit == 0:
+        no_binaries_left += 1
+
+    # Third digit analysis (single stars)
+    third_digit = int(enc_case_str[2])
+    single_stars_count += third_digit
+
+
+axs[2, 1].axis('off')  
+stats_text = f"""
+
+Mergers:
+- Same binary mergers: {mergers_same_binary}
+- Different binary mergers: {mergers_diff_binary}
+- Double mergers with exchanges: {double_mergers}
+
+Flybys/Exchanges:
+- No change in binaries: {binaries_no_change}
+- Single exchange: {exchanges_single}
+- Double exchange: {exchanges_double}
+- Binary unbounded or merged: {no_binaries_left}
+
+Single Stars formed after interactions: {single_stars_count}
+"""
+
+
+axs[2, 1].text(0.5, 0.5, stats_text, ha='center', va='center', fontsize=12, bbox=dict(facecolor='lightgray', edgecolor='black'))
+axs[2, 1].set_title("Encounter Stats")
+
+
+
 plt.tight_layout()
 plt.show()

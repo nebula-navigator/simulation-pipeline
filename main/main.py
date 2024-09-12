@@ -117,9 +117,9 @@ def load_data(file_path):
             rpz.append(rpz_val)
         
         # Prefix column names with the file key
-        data[f'x_{file_key}'] = rpx
-        data[f'y_{file_key}'] = rpy
-        data[f'z_{file_key}'] = rpz
+        data[f'posx'] = rpx
+        data[f'posy'] = rpy
+        data[f'posz'] = rpz
         
     
     include = 'both'  
@@ -198,7 +198,7 @@ def main_menu():
             if file_name:
                 # Perform operations on the selected data file
                 data = data_dict[file_name]  # Use the selected file's data
-                list_columns(data)
+                list_columns(current_data)
         elif choice == '4':
             if current_data is not None:
                 suggest_visualizations(current_data)
