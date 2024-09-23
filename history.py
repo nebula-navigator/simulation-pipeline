@@ -233,32 +233,7 @@ for enc_case in filtered_df['encCase']:
     single_stars_count += third_digit
 
 
-blackhole_interactions_df = filtered_df[(filtered_df['starType'] == 14) & (filtered_df['compType'] == 14)]
-
-mergers_with_blackholes = 0
-flybys_with_blackholes = 0
-exchanges_with_blackholes = 0
-single_stars_with_blackholes = 0
-
-for enc_case in blackhole_interactions_df['encCase']:
-    enc_case_str = str(enc_case).zfill(3)  
-   
-    first_digit = int(enc_case_str[0])
-    if first_digit in [1, 3, 6]:
-        mergers_with_blackholes += 1  
-    
-    # Second digit: Count flybys/exchanges
-    second_digit = int(enc_case_str[1])
-    if second_digit in [1, 2]:
-        flybys_with_blackholes += 1  
-    elif second_digit == 3:
-        exchanges_with_blackholes += 1  #single exchange
-    elif second_digit == 6:
-        exchanges_with_blackholes += 1  #double exchange
-    
-  
-    third_digit = int(enc_case_str[2])
-    single_stars_with_blackholes += third_digit  
+ 
 
 axs[2, 1].axis('off')  
 stats_text = f"""
@@ -267,7 +242,7 @@ Mergers:
 - Same binary mergers: {mergers_same_binary}
 - Different binary mergers: {mergers_diff_binary}
 - Double mergers with exchanges: {double_mergers}
-- Mergers with blackholes: {mergers_with_blackholes}
+
 
 Flybys/Exchanges:
 - No change in binaries: {binaries_no_change}
@@ -275,14 +250,11 @@ Flybys/Exchanges:
 - Double exchange: {exchanges_double}
 - Binary unbounded or merged: {no_binaries_left}
 
-Flybys/Exchanges with Blackholes:
-- Flybys with blackholes: {flybys_with_blackholes}
-- Single exchange with blackholes: {exchanges_with_blackholes}
-- Double exchange with blackholes: {exchanges_with_blackholes}
+
 
 Single Stars formed after interactions:
 - Total: {single_stars_count}
-- Single stars formed with blackholes: {single_stars_with_blackholes}
+
 """
 
 
@@ -292,7 +264,7 @@ axs[2, 1].text(0.5, 0.5, stats_text, ha='center', va='center', fontsize=10, bbox
 
 
 plt.tight_layout()
-plt.show()
+
 
 
 fig, axs = plt.subplots(3, 2, figsize=(14, 10))
@@ -308,6 +280,7 @@ axs[0, 0].set_ylabel("Frequency")
 axs[0, 0].tick_params(axis='x', rotation=45)
 
 filtered_df2 = df[df['mergMass1(26)'] > 0.001]
+filtered_df2.to_csv('mergers.dat', sep='\t', index=False)
 
 event_counts_3 = filtered_df2['compType'].value_counts()
 sns.barplot(x=event_counts_3.index, y=event_counts_3.values, ax=axs[0, 1])
@@ -318,10 +291,16 @@ axs[0, 1].set_ylabel("Frequency")
 
 filtered_df3 = filtered_df2[(filtered_df2['starType'] ==14) & (filtered_df2['compType']==14)]
 filtered_df_gw = filtered_df3[filtered_df3['lineType(1)'] == 'BIN_EVOL']
+print("Gravitational waves candidates: ", filtered_df_gw)
+filtered_df_gw.to_csv('gwcandidates.dat', sep='\t', index=False)
+
 
 bh1= df[df['idComp']==204]
-axs[1, 0].plot(filtered_df_gw['time[Myr]'], filtered_df_gw['aNew[Rsun]'])
-axs[1, 0].set_title("Evolution of semi-major axis in BH-BH Binary Mergers")
+axs[1, 0].plot(bh1['aOld[Rsun]'],bh1['eOld(16)'])
+bh1_id = bh1['idComp'].iloc[0]  
+axs[1, 0].set_title(f"Evolution of semi-major axis for black hole {bh1_id}")
+axs[1, 0].set_xlabel("Semi Major Axis (aOld)")
+axs[1, 0].set_ylabel("Eccentricity (eOld)")
 
 filtered_df4=df[df['lineType(1)'] == 'BIN_FORM']
 
@@ -335,14 +314,13 @@ axs[1, 1].set_title("New binary formation over time")
 
 
 filtered_df = df[df['mergMass1(26)'] > 0.001]
-lowmass=filtered_df[filtered_df['mergStarType1']==0]
-print(lowmass.head())
-print('low mass main sequence in mergers: ', len(lowmass))
-
-uniquemergers = sorted(filtered_df['mergStarType1'].unique())
 
 
-grouped = filtered_df.groupby(['time[Myr]', 'mergStarType1']).size().unstack(fill_value=0)
+
+uniquemergers = sorted(filtered_df['compType'].unique())
+
+
+grouped = filtered_df.groupby(['time[Myr]', 'compType']).size().unstack(fill_value=0)
 
 
 cumulative_counts_df = grouped.cumsum()
@@ -382,6 +360,14 @@ axs[2, 0].set_ylabel("Cumulative Count")
 axs[2, 0].legend(loc='upper left', bbox_to_anchor=(1, 1))
 axs[2, 0].grid(True)
 axs[2, 0].set_yscale('log')
+
+
+event_counts_3 = filtered_df3['lineType(1)'].value_counts()
+sns.barplot(x=event_counts_3.index, y=event_counts_3.values, ax=axs[2, 1])
+axs[2, 1].set_title("BH-BH Mergers")
+axs[2, 1].set_xlabel("Event Type")
+axs[2, 1].set_ylabel("Frequency")
+
 
 plt.tight_layout()
 plt.show()
