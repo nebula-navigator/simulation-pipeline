@@ -3,6 +3,8 @@ import seaborn as sns
 import numpy as np
 import pandas as pd
 from .decode_history import decode_history
+from .bhinfrad import bhinfrad
+from .calculate_half_mass_radius import calculate_half_mass_radius
 import config
 
 def plot_distribution_of_masses(current_data,x_column, y_column):
@@ -151,7 +153,68 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
         horizontalalignment='left',
         bbox=dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor="lightgray")
     )
-
+    
+    if data.loc[0, 'ik1'] == 14:
+        bh_mass = data.loc[0, 'sm1']
+    elif data.loc[0, 'ik2'] == 14:
+        bh_mass = data.loc[0, 'sm2']
+    else:
+        raise ValueError("No black hole (stellar type 14) found in the first row.")
+    
+    # Call the bhinfrad function with the black hole mass
+    influence_radius = bhinfrad(bh_mass)
+    
+    # Position of the black hole (projected x and y)
+    bh_position_x = data.loc[0, 'posx']
+    bh_position_y = data.loc[0, 'posy']
+    
+    # Add a circular marker at the black hole's position in the x-y plane
+    circle = plt.Circle(
+        (bh_position_x, bh_position_y), influence_radius, 
+        color='red', fill=False, linestyle='--', linewidth=2, label=f'Influence Radius (VD method) : {influence_radius:.4f} pc'
+    )
+    plt.gca().add_artist(circle)
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    
+    cumulative_mass=0
+    r2= 0
+    
+    for i in range(1, len(data)):
+        sm1_mass = data['sm1'].iloc[i]  # Mass from column sm1
+        sm2_mass = data['sm2'].iloc[i]  # Mass from column sm2
+        r_value = data['r'].iloc[i]  # Get the corresponding 'r' value
+    
+        cumulative_mass += sm1_mass + sm2_mass
+        if cumulative_mass >= bh_mass:
+            r2 = r_value  # Store the 'r' value at this point
+            print(f"Cumulative mass exceeded threshold at row {i}, influence radius (mass equivalence method): = {r_value} pc")
+            print(f"Cumulative mass at threshold is = {cumulative_mass} Msun")
+            break
+    # Add a circular marker at the black hole's position in the x-y plane
+    circle = plt.Circle(
+        (bh_position_x, bh_position_y), r2, 
+        color='blue', fill=False, linestyle='--', linewidth=2, label=f'Influence Radius (ME method): {r2:.4f} pc'
+    )
+    plt.gca().add_artist(circle)
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    
+    
+    data.loc[:, 'single_mass'] = data[['sm1', 'sm2']].sum(axis=1)
+    
+    print("calculating half mass radius...")
+    half_mass_radius=calculate_half_mass_radius(data, 'single_mass')
+    
+    # Add a circular marker at the black hole's position in the x-y plane
+    circle = plt.Circle(
+        (bh_position_x, bh_position_y), half_mass_radius, 
+        color='green', fill=False, linestyle='--', linewidth=2, label=f'Half mass radius: {half_mass_radius:.4f} pc'
+    )
+    plt.gca().add_artist(circle)
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    
     plt.title(f'Distribution of Masses: {x_column} vs {y_column}')
     plt.xlabel(x_column)
     plt.ylabel(y_column)
