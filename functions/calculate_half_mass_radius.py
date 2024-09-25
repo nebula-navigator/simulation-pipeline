@@ -10,16 +10,16 @@ def calculate_half_mass_radius(data, mass_col):
     if mass_col not in data.columns or 'r' not in data.columns:
         raise ValueError(f"Data must contain '{mass_col}' and 'r' columns.")
     
-    # Sort data by radial distance
+    # Sorting data by radial distance
     sorted_data = data.sort_values(by='r')
     print("sorted data half mass radius:", sorted_data)
-    # Calculate the total mass
+    # Calculating the total mass
     total_mass = sorted_data[mass_col].sum()
     
-    # Calculate cumulative mass
+    # Calculating cumulative mass
     sorted_data['cumulative_mass'] = sorted_data[mass_col].cumsum()
     print("total mass:",total_mass)
-    # Determine radius where cumulative mass reaches half of the total mass
+    # Determining radius where cumulative mass reaches half of the total mass
     half_mass = total_mass / 2.
     half_mass_radius = sorted_data.loc[sorted_data['cumulative_mass'] >= half_mass, 'r'].iloc[0]
     

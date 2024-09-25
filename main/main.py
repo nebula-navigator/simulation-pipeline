@@ -86,7 +86,7 @@ def load_data(file_path):
     config.data = data
 
     
-    # Calculate projected positions if 'r' column is available
+    # Calculating projected positions if 'r' column is available
     if 'r' in data.columns:
         r = data['r'].values
         rpx, rpy, rpz = [], [], []
@@ -116,7 +116,7 @@ def load_data(file_path):
             rpy.append(rpy_val)
             rpz.append(rpz_val)
         
-        # Prefix column names with the file key
+   
         data[f'posx'] = rpx
         data[f'posy'] = rpy
         data[f'posz'] = rpz
@@ -125,14 +125,14 @@ def load_data(file_path):
     include = 'both'  
     cumulative_df = get_cumulative_counts(include)
     
-    # cumulative counts DataFrame
+   
     print("\nCumulative Counts DataFrame:")
     print(cumulative_df)
     
     # star_type column based on ik1 and ik2
     data['star_type'] = data.apply(classify_stars, axis=1)
     
-    # Store the dataframe in the global dictionary
+    # Storing the dataframe in the global dictionary
     data_dict[file_key] = data
     
     return file_key
@@ -163,6 +163,12 @@ def select_data_file():
     return None
 
 
+def list_columns(data):
+    """List columns for the currently selected data."""
+    print("\nAvailable columns for plotting:")
+    for index, name in enumerate(data.columns, start=1):
+        print(f"{index}. {name}")
+
 def main_menu():
     global current_data
     while True:
@@ -185,8 +191,7 @@ def main_menu():
                 else:
                     print(f"File not found: {file_path}")
             print("\nData loading complete.")
-            
-            # Prompt user to select the data file right after loading
+        
             if data_dict:
                 print("\nPlease select a data file to work with:")
                 select_data_file()
@@ -196,7 +201,7 @@ def main_menu():
         elif choice == '3':
             file_name = select_data_file()
             if file_name:
-                # Perform operations on the selected data file
+                
                 data = data_dict[file_name]  # Use the selected file's data
                 list_columns(current_data)
         elif choice == '4':
@@ -211,11 +216,6 @@ def main_menu():
             print("Invalid choice. Please enter a number between 1 and 5.")
 
 
-def list_columns(data):
-    """List columns for the currently selected data."""
-    print("\nAvailable columns for plotting:")
-    for index, name in enumerate(data.columns, start=1):
-        print(f"{index}. {name}")
 
 if __name__ == "__main__":
     main_menu()

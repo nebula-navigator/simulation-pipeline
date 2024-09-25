@@ -19,7 +19,6 @@ def plot_scatter(x_column, y_column, current_data, continuous_column=None, color
         print(f"Error: Columns '{x_column}' or '{y_column}' not found in data.")
         return
     
-    # Always prompt for star type selection
     print("\nAvailable star types (based on k values):")
     for k, v in k_values.items():
         print(f"{k}: {v}")
@@ -60,7 +59,7 @@ def plot_scatter(x_column, y_column, current_data, continuous_column=None, color
     else:
         range_text = None  # No range filtering applied
 
-    # Ask for optional limits on the categorical column
+    # Asking for optional limits on the categorical column
     if categorical_column and categorical_column in filtered_data.columns:
         sec_color_min = input(f"Enter minimum value for {categorical_column} (or press Enter to use default): ")
         sec_color_max = input(f"Enter maximum value for {categorical_column} (or press Enter to use default): ")
@@ -86,33 +85,30 @@ def plot_scatter(x_column, y_column, current_data, continuous_column=None, color
         y_values = filtered_data[y_column]
         sec_color_min = sec_color_max = None  # No secondary color limits
 
-    # Convert categorical columns to categorical data type
+    # Converting categorical columns to categorical data type
     if categorical_column in filtered_data.columns:
         filtered_data[categorical_column] = filtered_data[categorical_column].astype('category')
     
     plt.figure(figsize=(10, 6))
     
    
-    
-    
-        # Scatter plot with the categorical column as hue
     sns.scatterplot(
             x=filtered_data[x_column], 
             y=y_values,
-            hue=filtered_data[categorical_column],  # Color based on the categorical column
-            style=filtered_data['star_type'],  # Use different markers for star types
+            hue=filtered_data[categorical_column],  
+            style=filtered_data['star_type'],  
             palette='viridis',
             alpha=1, s=100,
             legend='full'
         )
         
-    # Add text box showing the selected range of the continuous variable in the top-left corner
+    # Adding text box showing the selected range of the continuous variable in the top-left corner
     if range_text:
         plt.gca().text(0.02, 0.98, range_text, transform=plt.gca().transAxes, 
                        fontsize=10, verticalalignment='top', horizontalalignment='left',
                        bbox=dict(boxstyle='round,pad=0.3', edgecolor='black', facecolor='lightyellow'))
     
-    # Move the legend outside of the plot and adjust the layout
+    # Moving the legend outside of the plot and adjust the layout
     plt.legend(title='Legend', bbox_to_anchor=(1.05, 1), loc='upper left')
     
     plt.title(f'Scatter Plot of {x_column} vs {y_column}' if y_column != 'cumulative_count' else 'Line Plot of Cumulative Counts')
@@ -121,9 +117,9 @@ def plot_scatter(x_column, y_column, current_data, continuous_column=None, color
     plt.grid(True)
     
     plt.show(block=False)
-    plt.pause(0.1)  # Allow the plot to display
+    plt.pause(0.1)  
     
-    # Prompt user if they want to save the filtered data
+    
     save_data_prompt = input("Would you like to save the filtered data? (y/n): ").strip().lower()
     
     if save_data_prompt == 'y':
@@ -133,19 +129,19 @@ def plot_scatter(x_column, y_column, current_data, continuous_column=None, color
         metadata += f"# x_column: {x_column}, y_column: {y_column}\n"
         metadata += f"# categorical_column: {categorical_column} with limits [{sec_color_min}, {sec_color_max}]\n"
         
-        # Align columns
+        # saving data with proper alignment
         column_widths = [max(len(str(value)) for value in [col] + filtered_data[col].tolist()) + 2 for col in filtered_data.columns]
         with open(file_name, 'w') as f:
             f.write("# Metadata\n")
             f.write(metadata)
             f.write("# Data\n")
             
-            # Write column headers with proper alignment
+            
             for col, width in zip(filtered_data.columns, column_widths):
                 f.write(f"{col.ljust(width)}")
             f.write('\n')
             
-            # Write data rows with proper alignment
+            
             for _, row in filtered_data.iterrows():
                 for col, width in zip(filtered_data.columns, column_widths):
                     f.write(f"{str(row[col]).ljust(width)}")

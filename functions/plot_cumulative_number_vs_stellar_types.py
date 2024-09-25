@@ -23,7 +23,7 @@ def plot_cumulative_number_vs_stellar_types(current_data,include):
 
     cumulative_counts = {stype: 0 for stype in k_values.values()}
 
-    # Initialize counts for single and binary
+    # Initializing counts for single and binary
     single_counts = {stype: 0 for stype in k_values.values()}
     binary_counts = {stype: 0 for stype in k_values.values()}
 
@@ -58,7 +58,7 @@ def plot_cumulative_number_vs_stellar_types(current_data,include):
     # Converting cumulative counts to a DataFrame for plotting
     cumulative_counts_df = pd.DataFrame(list(cumulative_counts.items()), columns=['Stellar Type', 'Count'])
     
-    # Plot the cumulative counts
+    
     plt.figure(figsize=(12, 6))
     sns.barplot(x='Stellar Type', y='Count', data=cumulative_counts_df)
     plt.xticks(rotation=90)

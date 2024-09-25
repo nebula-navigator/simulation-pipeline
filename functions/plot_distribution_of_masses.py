@@ -15,12 +15,12 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
         print(f"Error: Columns '{x_column}' or '{y_column}' not found in data.")
         return
 
-    # Print available stellar types (k values)
+    
     print("\nAvailable star types (based on k values):")
     for k, v in k_values.items():
         print(f"{k}: {v}")
     
-    # Prompt for stellar types to include
+   
     selected_ks = input("Enter the k values to include (comma-separated) or press Enter to include all: ").strip()
     
     if selected_ks:
@@ -88,11 +88,11 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
         x=filtered_data[x_column], 
         y=filtered_data[y_column], 
         hue=filtered_data['star_type'], 
-        style=filtered_data['star_type'],  # Used star_type for style
+        style=filtered_data['star_type'], 
         palette=custom_palette, 
         markers=custom_style,  
         alpha=0.7,
-        hue_order=star_type_order,  # Ensuring hue_order aligns with style_order
+        hue_order=star_type_order, 
         style_order=star_type_order
     )
     
@@ -161,14 +161,14 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
     else:
         raise ValueError("No black hole (stellar type 14) found in the first row.")
     
-    # Call the bhinfrad function with the black hole mass
+    # Calling the bhinfrad function with the black hole mass
     influence_radius = bhinfrad(bh_mass)
     
     # Position of the black hole (projected x and y)
     bh_position_x = data.loc[0, 'posx']
     bh_position_y = data.loc[0, 'posy']
     
-    # Add a circular marker at the black hole's position in the x-y plane
+    # Adding a circular marker at the influence radius position in the x-y plane
     circle = plt.Circle(
         (bh_position_x, bh_position_y), influence_radius, 
         color='red', fill=False, linestyle='--', linewidth=2, label=f'Influence Radius (VD method) : {influence_radius:.4f} pc'
@@ -183,15 +183,15 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
     for i in range(1, len(data)):
         sm1_mass = data['sm1'].iloc[i]  # Mass from column sm1
         sm2_mass = data['sm2'].iloc[i]  # Mass from column sm2
-        r_value = data['r'].iloc[i]  # Get the corresponding 'r' value
+        r_value = data['r'].iloc[i]  # Getting the corresponding 'r' value
     
         cumulative_mass += sm1_mass + sm2_mass
         if cumulative_mass >= bh_mass:
-            r2 = r_value  # Store the 'r' value at this point
+            r2 = r_value  # Storing the 'r' value at this point
             print(f"Cumulative mass exceeded threshold at row {i}, influence radius (mass equivalence method): = {r_value} pc")
             print(f"Cumulative mass at threshold is = {cumulative_mass} Msun")
             break
-    # Add a circular marker at the black hole's position in the x-y plane
+    # Adding a circular marker at the influence radius position in the x-y plane
     circle = plt.Circle(
         (bh_position_x, bh_position_y), r2, 
         color='blue', fill=False, linestyle='--', linewidth=2, label=f'Influence Radius (ME method): {r2:.4f} pc'
@@ -206,7 +206,7 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
     print("calculating half mass radius...")
     half_mass_radius=calculate_half_mass_radius(data, 'single_mass')
     
-    # Add a circular marker at the black hole's position in the x-y plane
+    # Adding a circular marker at the half-mass radius position in the x-y plane
     circle = plt.Circle(
         (bh_position_x, bh_position_y), half_mass_radius, 
         color='green', fill=False, linestyle='--', linewidth=2, label=f'Half mass radius: {half_mass_radius:.4f} pc'
@@ -231,19 +231,19 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
         metadata += f"# Selected k-values: {selected_ks}\n"
         metadata += f"# x_column: {x_column}, y_column: {y_column}\n"
 
-        # Align columns
+       #saving data with proper alignment
         column_widths = [max(len(str(value)) for value in [col] + filtered_data[col].tolist()) + 2 for col in filtered_data.columns]
         with open(file_name, 'w') as f:
             f.write("# Metadata\n")
             f.write(metadata)
             f.write("# Data\n")
 
-            # Write column headers with proper alignment
+            
             for col, width in zip(filtered_data.columns, column_widths):
                 f.write(f"{col.ljust(width)}")
             f.write('\n')
 
-            # Write data rows with proper alignment
+            
             for _, row in filtered_data.iterrows():
                 for col, width in zip(filtered_data.columns, column_widths):
                     f.write(f"{str(row[col]).ljust(width)}")

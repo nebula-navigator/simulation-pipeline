@@ -32,7 +32,7 @@ def decode_history(hist_value):
     
     binary_string = format(hist_value, '020b')[::-1]  # 20-bit binary string, reversed
     
-    # Decode events
+    # Decoding events
     decoded_events = [
         events[i] for i, bit in enumerate(binary_string) if bit == '1' and i < len(events)
     ]
