@@ -24,6 +24,22 @@ print(df)
 print("Column Names:")
 print(df.columns.tolist())
 
+def save_data(df, filename):
+    
+    column_widths = []
+    for col in df.columns:
+        max_col_width = max(df[col].astype(str).apply(len).max(), len(col))
+        column_widths.append(max_col_width)
+
+   
+    def format_row(row):
+        return '\t\t'.join(f'{str(item):<{width}}' for item, width in zip(row, column_widths))
+
+    with open(filename, 'w') as f:
+        f.write(format_row(df.columns) + '\n')
+        
+        for index, row in df.iterrows():
+            f.write(format_row(row.values) + '\n')
 #df = df[(df['starType'] == 14)]
 
 df['MassChange'] = df['massNew[Msun]'] - df['massOld[Msun](10)']
@@ -280,7 +296,7 @@ axs[0, 0].set_ylabel("Frequency")
 axs[0, 0].tick_params(axis='x', rotation=45)
 
 filtered_df2 = df[df['mergMass1(26)'] > 0.001]
-filtered_df2.to_csv('mergers.dat', sep='\t', index=False)
+save_data(filtered_df2,'mergers.dat')
 
 event_counts_3 = filtered_df2['compType'].value_counts()
 sns.barplot(x=event_counts_3.index, y=event_counts_3.values, ax=axs[0, 1])
@@ -289,28 +305,64 @@ axs[0, 1].set_xlabel("Stellar Type")
 axs[0, 1].set_ylabel("Frequency")
 
 
-filtered_df3 = filtered_df2[(filtered_df2['starType'] ==14) & (filtered_df2['compType']==14)]
+filtered_df3 = filtered_df2[(filtered_df2['starType'] == 14) & (filtered_df2['compType'].isin([13, 14]))]
 filtered_df_gw = filtered_df3[filtered_df3['lineType(1)'] == 'BIN_EVOL']
 print("Gravitational waves candidates: ", filtered_df_gw)
-filtered_df_gw.to_csv('gwcandidates.dat', sep='\t', index=False)
+save_data(filtered_df_gw,'gwcandidates.dat')
 
+unique_ids_bhs = filtered_df_gw['idComp'].unique()
+for id in unique_ids_bhs:
+    bh=df[df['idComp']==id]
+    filename = f'gwcandidate_{id}.dat'
+    save_data(bh,filename)
 
+print("History files for GW candidates have been generated")
+
+#make data file
 bh1= df[df['idComp']==204]
 axs[1, 0].plot(bh1['aOld[Rsun]'],bh1['eOld(16)'])
 bh1_id = bh1['idComp'].iloc[0]  
 axs[1, 0].set_title(f"Evolution of semi-major axis for black hole {bh1_id}")
 axs[1, 0].set_xlabel("Semi Major Axis (aOld)")
-axs[1, 0].set_ylabel("Eccentricity (eOld)")
+axs[1, 0].set_ylabel("Orbital Eccentricity (eOld)")
 
-filtered_df4=df[df['lineType(1)'] == 'BIN_FORM']
+# Initialize the summary table as an empty dictionary with unique lineType(1) as keys
+unique_line_types = filtered_df2['lineType(1)'].unique()
 
-grouped_bin_form = filtered_df4.groupby('time[Myr]').size()
+summary_table = {
+    'Stellar Type': [],
+}
+
+for line_type in unique_line_types:
+    summary_table[line_type] = []
+
+summary_table['Total Count'] = []
+
+for comp_type in range(15):
+    filtered_df_by_type = filtered_df2[filtered_df2['compType'] == comp_type]
+    
+    summary_table['Stellar Type'].append(comp_type)
+    
+    total_count = 0
+    for line_type in unique_line_types:
+        count = len(filtered_df_by_type[filtered_df_by_type['lineType(1)'] == line_type])
+        summary_table[line_type].append(count)
+        total_count += count
+    
+
+    summary_table['Total Count'].append(total_count)
+
+summary_df = pd.DataFrame(summary_table)
+
+axs[1, 1].axis('off')  
 
 
-cumulative_bin_form = grouped_bin_form.cumsum()
+table_data = summary_df.values
+column_labels = summary_df.columns
+axs[1, 1].table(cellText=table_data, colLabels=column_labels, loc='center')
 
-axs[1, 1].plot(cumulative_bin_form.index, cumulative_bin_form.values, label='Cumulative BIN_FORM Events', color='blue', linewidth=2)
-axs[1, 1].set_title("New binary formation over time")
+
+
 
 
 filtered_df = df[df['mergMass1(26)'] > 0.001]
@@ -354,10 +406,10 @@ for comptype in cumulative_counts_df.columns:
     axs[2, 0].plot(extended_x, extended_y, label=f'Comp Type {comptype}')
 
 
-axs[2, 0].set_title("Encounters with Different Stellar Types")
+axs[2, 0].set_title("Mergers with Different Stellar Types Vs Time")
 axs[2, 0].set_xlabel("Time (Myr)")
 axs[2, 0].set_ylabel("Cumulative Count")
-axs[2, 0].legend(loc='upper left', bbox_to_anchor=(1, 1))
+axs[2, 0].legend(loc='upper left', bbox_to_anchor=(1, 1.5))
 axs[2, 0].grid(True)
 axs[2, 0].set_yscale('log')
 
@@ -370,4 +422,121 @@ axs[2, 1].set_ylabel("Frequency")
 
 
 plt.tight_layout()
+
+fig, axs = plt.subplots(figsize=(10, 6))
+filtered_df2['MassChange'] = filtered_df2['massNew[Msun]'] - filtered_df2['massOld[Msun](10)']
+mass_increase_points2 = filtered_df2[filtered_df2['MassChange'] > 0.]
+
+axs.set_facecolor('black')
+
+
+axs.grid(True, color='white', linestyle='-', linewidth=0.5) 
+
+
+legend = axs.legend(frameon=True)
+legend.get_frame().set_facecolor('gray')  
+legend.get_frame().set_edgecolor('white')  
+plt.setp(legend.get_texts(), color='white')  
+axs.plot(filtered_df2['time[Myr]'], filtered_df2['massNew[Msun]'], color='w')
+
+ordered_stellar_types = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+
+marker_styles = {
+    0: 'o',   
+    1: 's',   
+    2: '^',   
+    3: 'P',   
+    4: 'X',   
+    5: 'D',   
+    6: 'v',   
+    7: '<',   
+    8: '>',   
+    9: '*',   
+    10: 'H',  
+    11: '+',  
+    12: 'h',  
+    13: 'd',  
+    14: 'x'  }
+unique_stellar_types = filtered_df2['compType'].unique()
+
+
+
+color_palette = [
+    'crimson',       # #DC143C
+    'royalblue',     # #4169E1
+    'goldenrod',     # #DAA520
+    'mediumseagreen',# #3CB371
+    'tomato',        # #FF6347
+    'slateblue',     # #6A5ACD
+    'darkorange',    # #FF8C00
+    'mediumorchid',  # #BA55D3
+    'lightcoral',    # #F08080
+    'seagreen',      # #2E8B57
+    'slategray',     # #708090
+    'peru',          # #CD853F
+    'steelblue',     # #4682B4
+    'sandybrown',     # #F4A460
+    'olivedrab'      # #6B8E23
+]
+
+
+
+
+color_dict = {stellar_type: color_palette[i] for i, stellar_type in enumerate(ordered_stellar_types)}
+
+
+for stellar_type in ordered_stellar_types:
+    event_points = mass_increase_points2[mass_increase_points2['compType'] == stellar_type]
+    axs.scatter(event_points['time[Myr]'], event_points['massNew[Msun]'],
+                color=color_dict[stellar_type], marker=marker_styles[stellar_type], 
+                label=f'{stellar_type}', s=10, zorder=10)
+
+
+
+axs.set_title("Mass Evolution in Mergers Over Time with Each Stellar Type")
+axs.set_xlabel("Time (Myr)")
+axs.set_ylabel("Mass (Msun)")
+#axs.set_xlim([0, 2000])
+axs.legend(loc='upper left', bbox_to_anchor=(1, 1))
+
+def on_click(event):
+    if event.inaxes == axs:  
+        # Get the index of the closest point
+        closest_index = ((mass_increase_points2['time[Myr]'] - event.xdata)**2 + 
+                         (mass_increase_points2['massNew[Msun]'] - event.ydata)**2).idxmin()
+
+        
+        event_info = mass_increase_points2.loc[closest_index]
+
+        output_text = f"""
+        Event Information:
+        --------------------
+        EventType: {event_info['lineType(1)']}
+        EncId: {event_info['encId']}
+        EncCase: {event_info['encCase']}
+        Time (Myr): {event_info['time[Myr]']}
+        Summary: {event_info['Summary']}
+        Id6: {event_info['id(6)']}
+        IdComp: {event_info['idComp']}
+        IdCompNew: {event_info['idCompNew']}
+        IM: {event_info['im']}
+        MassOld (Msun): {event_info['massOld[Msun](10)']}
+        MassNew (Msun): {event_info['massNew[Msun]']}
+        MassChange: {event_info['MassChange']}
+        aOld (Rsun): {event_info['aOld[Rsun]']}
+        aNew (Rsun): {event_info['aNew[Rsun]']}
+        eOld: {event_info['eOld(16)']}
+        eNew: {event_info['eNew']}
+        starType: {event_info['starType']}
+        compType: {event_info['compType']}
+        binType: {event_info['binType']}
+        
+        """
+        print(output_text)
+
+
+
+fig.canvas.mpl_connect('button_press_event', on_click)
+
+
 plt.show()
