@@ -104,7 +104,7 @@ axs[0, 0].legend(loc='upper left', bbox_to_anchor=(1, 1))
 
 def on_click(event):
     if event.inaxes == axs[0, 0]:  
-        # Get the index of the closest point
+        # Getting the index of the closest point
         closest_index = ((mass_increase_points['time[Myr]'] - event.xdata)**2 + 
                          (mass_increase_points['massNew[Msun]'] - event.ydata)**2).idxmin()
 
@@ -194,7 +194,7 @@ for enc_case in cumulative_counts_df.columns:
         last_encounter_time = x_values[0]  
 
     
-    extended_x = np.append(x_values[x_values <= last_encounter_time], last_encounter_time + (x_values[1] - x_values[0]))  # Add a point after the last occurrence
+    extended_x = np.append(x_values[x_values <= last_encounter_time], last_encounter_time + (x_values[1] - x_values[0]))  
     extended_y = np.append(y_values[x_values <= last_encounter_time], 0) 
     
     
@@ -305,7 +305,7 @@ axs[0, 1].set_xlabel("Stellar Type")
 axs[0, 1].set_ylabel("Frequency")
 
 
-filtered_df3 = filtered_df2[(filtered_df2['starType'] == 14) & (filtered_df2['compType'].isin([13, 14]))]
+filtered_df3 = filtered_df2[(filtered_df2['starType'] == 14) & (filtered_df2['compType'].isin([10,11,12,13, 14]))]
 filtered_df_gw = filtered_df3[filtered_df3['lineType(1)'] == 'BIN_EVOL']
 print("Gravitational waves candidates: ", filtered_df_gw)
 save_data(filtered_df_gw,'gwcandidates.dat')
@@ -318,7 +318,7 @@ for id in unique_ids_bhs:
 
 print("History files for GW candidates have been generated")
 
-#make data file
+
 bh1= df[df['idComp']==204]
 axs[1, 0].plot(bh1['aOld[Rsun]'],bh1['eOld(16)'])
 bh1_id = bh1['idComp'].iloc[0]  
@@ -326,7 +326,7 @@ axs[1, 0].set_title(f"Evolution of semi-major axis for black hole {bh1_id}")
 axs[1, 0].set_xlabel("Semi Major Axis (aOld)")
 axs[1, 0].set_ylabel("Orbital Eccentricity (eOld)")
 
-# Initialize the summary table as an empty dictionary with unique lineType(1) as keys
+
 unique_line_types = filtered_df2['lineType(1)'].unique()
 
 summary_table = {
@@ -485,23 +485,25 @@ color_palette = [
 color_dict = {stellar_type: color_palette[i] for i, stellar_type in enumerate(ordered_stellar_types)}
 
 
-for stellar_type in ordered_stellar_types:
-    event_points = mass_increase_points2[mass_increase_points2['compType'] == stellar_type]
-    axs.scatter(event_points['time[Myr]'], event_points['massNew[Msun]'],
-                color=color_dict[stellar_type], marker=marker_styles[stellar_type], 
-                label=f'{stellar_type}', s=10, zorder=10)
+sns.scatterplot(data=mass_increase_points2,
+                x='time[Myr]', y='massNew[Msun]',
+                hue='compType',  
+                style='lineType(1)',  
+                palette=color_palette,  
+                s=50,alpha=0.7,zorder=2,legend='full')  
+
 
 
 
 axs.set_title("Mass Evolution in Mergers Over Time with Each Stellar Type")
 axs.set_xlabel("Time (Myr)")
 axs.set_ylabel("Mass (Msun)")
-#axs.set_xlim([0, 2000])
+axs.set_xlim([0, 2000])
 axs.legend(loc='upper left', bbox_to_anchor=(1, 1))
 
 def on_click(event):
     if event.inaxes == axs:  
-        # Get the index of the closest point
+        # Getting the index of the closest point
         closest_index = ((mass_increase_points2['time[Myr]'] - event.xdata)**2 + 
                          (mass_increase_points2['massNew[Msun]'] - event.ydata)**2).idxmin()
 
