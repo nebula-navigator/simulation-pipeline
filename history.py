@@ -3,8 +3,12 @@ import re
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+import random
+import os
 
 file_path = input("Please enter the path to the history file: ")
+
+history_basename = os.path.splitext(os.path.basename(file_path))[0]
 
 with open(file_path, 'r') as file:
     history_content = file.readlines()
@@ -26,20 +30,27 @@ print(df.columns.tolist())
 
 def save_data(df, filename):
     
+    output_directory = f"data_{history_basename}"
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+   
+    file_path = os.path.join(output_directory, filename)
+
+   
     column_widths = []
     for col in df.columns:
         max_col_width = max(df[col].astype(str).apply(len).max(), len(col))
         column_widths.append(max_col_width)
 
-   
     def format_row(row):
         return '\t\t'.join(f'{str(item):<{width}}' for item, width in zip(row, column_widths))
-
-    with open(filename, 'w') as f:
+    with open(file_path, 'w') as f:
         f.write(format_row(df.columns) + '\n')
         
         for index, row in df.iterrows():
             f.write(format_row(row.values) + '\n')
+
+    print(f"Data saved to {file_path}")
 #df = df[(df['starType'] == 14)]
 
 df['MassChange'] = df['massNew[Msun]'] - df['massOld[Msun](10)']
@@ -310,19 +321,36 @@ filtered_df_gw = filtered_df3[filtered_df3['lineType(1)'] == 'BIN_EVOL']
 print("Gravitational waves candidates: ", filtered_df_gw)
 save_data(filtered_df_gw,'gwcandidates.dat')
 
-unique_ids_bhs = filtered_df_gw['idComp'].unique()
-for id in unique_ids_bhs:
-    bh=df[df['idComp']==id]
-    filename = f'gwcandidate_{id}.dat'
-    save_data(bh,filename)
+unique_ids_gw = filtered_df_gw['idComp'].unique()
+
+for id in unique_ids_gw:
+    gw = df[df['idComp'] == id]
+
+    if not gw.empty:
+        comp_type = gw['compType'].iloc[0]  
+        if comp_type in [10, 11, 12]:
+            filename = f'gwcandidate_bh-wd{id}.dat'
+            save_data(gw, filename)
+        elif comp_type == 13:
+            filename = f'gwcandidate_bh-ns{id}.dat'
+            save_data(gw, filename)
+        elif comp_type == 14:
+            filename = f'gwcandidate_bh-bh{id}.dat'
+            save_data(gw, filename)
 
 print("History files for GW candidates have been generated")
 
 
-bh1= df[df['idComp']==204]
-axs[1, 0].plot(bh1['aOld[Rsun]'],bh1['eOld(16)'])
-bh1_id = bh1['idComp'].iloc[0]  
-axs[1, 0].set_title(f"Evolution of semi-major axis for black hole {bh1_id}")
+random_idComp = random.choice(filtered_df_gw['idComp'].unique())
+
+
+cand = df[df['idComp'] == random_idComp]
+
+
+axs[1, 0].plot(cand['aOld[Rsun]'], cand['eOld(16)'])
+
+
+axs[1, 0].set_title(f"Evolution of semi-major axis for candidate {random_idComp}")
 axs[1, 0].set_xlabel("Semi Major Axis (aOld)")
 axs[1, 0].set_ylabel("Orbital Eccentricity (eOld)")
 
@@ -442,21 +470,11 @@ axs.plot(filtered_df2['time[Myr]'], filtered_df2['massNew[Msun]'], color='w')
 ordered_stellar_types = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
 
 marker_styles = {
-    0: 'o',   
-    1: 's',   
-    2: '^',   
-    3: 'P',   
-    4: 'X',   
-    5: 'D',   
-    6: 'v',   
-    7: '<',   
-    8: '>',   
-    9: '*',   
-    10: 'H',  
-    11: '+',  
-    12: 'h',  
-    13: 'd',  
-    14: 'x'  }
+    'COLLISION': 'o',  # Circle
+    'BIN_STAR': 'x',   # 'x' Marker
+    'BIN_BIN': 's',    # Square
+    'BIN_EVOL': '+'    # Plus
+}
 unique_stellar_types = filtered_df2['compType'].unique()
 
 
