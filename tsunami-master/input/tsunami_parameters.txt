@@ -1,0 +1,10 @@
+3          //number of particles
+30      //total integration time (code units) //yr = 6.28372892847
+1.0        //your mass unit (in solar masses)
+1.0        //your length unit (in au)
+1.0e-20     //time step for printing snapshots (x, y, z, vx, vy, vz, mass)
+no        //do you want o include Post-Newtonian terms up to order 2.5 ? (yes or no)
+no        //do you want to include equilibrium tides? (yes or no)
+no        //do you want to include dynamical tides? (yes or no)
+1.0       //X for checking for collisions when d < (r1+r2)*X. set to 0 to disable collisions
+no       //do you want to include external potentials
