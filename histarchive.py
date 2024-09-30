@@ -412,7 +412,7 @@ for file_path in glob.glob(file_path):
        # table_data = summary_df.values
        # column_labels = summary_df.columns
        # axs[1, 1].table(cellText=table_data, colLabels=column_labels, loc='center')
-       # save_data(summary_df,'mergersum.dat')
+       save_data(summary_df,'mergersum.dat')
     
     
     
