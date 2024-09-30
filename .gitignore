@@ -16,3 +16,5 @@ test02.dat
 test2.dat
 *.dat
 data_saves/
+*.zip
+tsunami-master/
