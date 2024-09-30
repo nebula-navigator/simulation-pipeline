@@ -388,7 +388,7 @@ axs[1, 1].axis('off')
 table_data = summary_df.values
 column_labels = summary_df.columns
 axs[1, 1].table(cellText=table_data, colLabels=column_labels, loc='center')
-
+save_data(summary_df,'mergersum.dat')
 
 
 
