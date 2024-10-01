@@ -45,7 +45,7 @@ def bhinfrad(bh_mass):
     km_to_m = 1e3  # Conversion from km to m
     parsec_to_m = 3.086e16  # Conversion from parsecs to meters
     
-    file_path = "/home/sohaib/CAMK/Simulation1/15Gyr/system.dat"
+    file_path = input("Enter path to system.dat for calculations : ")
     data, columns = read_system_dat(file_path)
 
     if data.empty:
