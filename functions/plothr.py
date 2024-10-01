@@ -61,15 +61,15 @@ def plothr(current_data):
     data['temp1'] = data['bv1'].apply(lambda bv: calculate_temperature(bv) if not pd.isna(bv) else np.nan)
     data['temp2'] = data['bv2'].apply(lambda bv: calculate_temperature(bv) if not pd.isna(bv) else np.nan)
 
-    # Calculate temperatures using luminosity and radius
-    data['temp1_lum'] = data.apply(lambda row: calculate_temperature_from_luminosity_and_radius(row['lum1'], row['rad1']), axis=1)
-    data['temp2_lum'] = data.apply(lambda row: calculate_temperature_from_luminosity_and_radius(row['lum2'], row['rad2']), axis=1)
+    # # Calculate temperatures using luminosity and radius
+    # data['temp1_lum'] = data.apply(lambda row: calculate_temperature_from_luminosity_and_radius(row['lum1'], row['rad1']), axis=1)
+    # data['temp2_lum'] = data.apply(lambda row: calculate_temperature_from_luminosity_and_radius(row['lum2'], row['rad2']), axis=1)
     
     # Plot using B-V color index
     plot_hr_diagram(data, selected_types, k_values, temp_columns=['temp1', 'temp2'], plot_title='Hertzsprung-Russell Diagram (B-V Index)')
 
     # Plot using temperatures calculated from luminosity and radius
-    plot_hr_diagram(data, selected_types, k_values, temp_columns=['temp1_lum', 'temp2_lum'], plot_title='Hertzsprung-Russell Diagram (Luminosity-Based Temperatures)')
+    #plot_hr_diagram(data, selected_types, k_values, temp_columns=['temp1_lum', 'temp2_lum'], plot_title='Hertzsprung-Russell Diagram (Luminosity-Based Temperatures)')
 
 
 def plot_hr_diagram(data, selected_types, k_values, temp_columns, plot_title):
@@ -144,6 +144,30 @@ def plot_hr_diagram(data, selected_types, k_values, temp_columns, plot_title):
     
     handles = [plt.Line2D([0], [0], marker='.', color='w', markerfacecolor=color_map[stype], markersize=10, label=k_values.get(stype, 'Unknown')) for stype in selected_types]
     ax1.legend(title='Stellar Type', handles=handles, loc='best')
-
+    
     plt.tight_layout()
     plt.show()
+    
+   
+    save_data_prompt = input("Would you like to save the snapfile with temperatures? (y/n): ").strip().lower()
+    
+    if save_data_prompt == 'y':
+        file_name = input('Enter the filename to save (without extension): ').strip() + '.dat'
+        
+        
+        # saving data with proper alignment
+        column_widths = [max(len(str(value)) for value in [col] + data[col].tolist()) + 2 for col in data.columns]
+        with open(file_name, 'w') as f:
+            
+            
+            
+            for col, width in zip(data.columns, column_widths):
+                f.write(f"{col.ljust(width)}")
+            f.write('\n')
+            
+            
+            for _, row in data.iterrows():
+                for col, width in zip(data.columns, column_widths):
+                    f.write(f"{str(row[col]).ljust(width)}")
+                f.write('\n')
+    print(f"Data saved to {file_name}")

@@ -80,10 +80,10 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
     # Custom palette for the plot
     palette = sns.color_palette("viridis", len(star_type_order))
     custom_palette = {star_type: color for star_type, color in zip(star_type_order, palette)}
-
-    # Scatter plot
-    plt.figure(figsize=(12, 8))
     
+    ## Scatter plot
+    plt.figure(figsize=(12, 8))
+
     scatter_plot = sns.scatterplot(
         x=filtered_data[x_column], 
         y=filtered_data[y_column], 
@@ -95,6 +95,13 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
         hue_order=star_type_order, 
         style_order=star_type_order
     )
+
+    # Create labels with counts for the legend
+    legend_labels = [f'{star_type} ({star_type_counts.get(star_type, 0)})' for star_type in star_type_order]
+    
+    # Update the legend with the custom labels
+    handles, _ = scatter_plot.get_legend_handles_labels()
+    plt.legend(handles=handles[:len(legend_labels)], labels=legend_labels, title='Star Type with Counts', loc='upper left', bbox_to_anchor=(1, 1))
     
     # Click event handler function
     def on_click(event):
@@ -133,15 +140,15 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
     # Connecting the click event
     plt.gcf().canvas.mpl_connect('button_press_event', on_click)
     
-    # Adjusting legend to include counts
-    handles, labels = scatter_plot.get_legend_handles_labels()
-    plt.legend(
-        handles=handles, 
-        labels=[f'{label} ({star_type_counts.get(label, 0)})' for label in labels], 
-        loc='upper left', 
-        bbox_to_anchor=(1, 1),
-        title='Star Type'
-    )
+    # # Adjusting legend to include counts
+    # handles, labels = scatter_plot.get_legend_handles_labels()
+    # plt.legend(
+    #     handles=handles, 
+    #     labels=[f'{label} ({star_type_counts.get(label, 0)})' for label in labels], 
+    #     loc='upper left', 
+    #     bbox_to_anchor=(1, 1),
+    #     title='Star Type'
+    # )
     
     # Adding the mass, radial pos range, and total count information
     plt.text(
@@ -174,8 +181,7 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
         color='red', fill=False, linestyle='--', linewidth=2, label=f'Influence Radius (VD method) : {influence_radius:.4f} pc'
     )
     plt.gca().add_artist(circle)
-    plt.gca().set_aspect('equal', adjustable='box')
-    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    
     
     cumulative_mass=0
     r2= 0
@@ -192,13 +198,12 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
             print(f"Cumulative mass at threshold is = {cumulative_mass} Msun")
             break
     # Adding a circular marker at the influence radius position in the x-y plane
-    circle = plt.Circle(
+    circle2 = plt.Circle(
         (bh_position_x, bh_position_y), r2, 
         color='blue', fill=False, linestyle='--', linewidth=2, label=f'Influence Radius (ME method): {r2:.4f} pc'
     )
-    plt.gca().add_artist(circle)
-    plt.gca().set_aspect('equal', adjustable='box')
-    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    plt.gca().add_artist(circle2)
+    
     
     
     data.loc[:, 'single_mass'] = data[['sm1', 'sm2']].sum(axis=1)
@@ -207,14 +212,26 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
     half_mass_radius=calculate_half_mass_radius(data, 'single_mass')
     
     # Adding a circular marker at the half-mass radius position in the x-y plane
-    circle = plt.Circle(
+    circle3 = plt.Circle(
         (bh_position_x, bh_position_y), half_mass_radius, 
         color='green', fill=False, linestyle='--', linewidth=2, label=f'Half mass radius: {half_mass_radius:.4f} pc'
     )
-    plt.gca().add_artist(circle)
-    plt.gca().set_aspect('equal', adjustable='box')
-    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    plt.gca().add_artist(circle3)
     
+    # Collecting all handles and labels (for star types and the additional circles)
+    handles, labels = scatter_plot.get_legend_handles_labels()
+    
+    # Add the new circles' handles and labels manually to the list
+    handles.extend([circle, circle2, circle3])
+    labels.extend([
+        f'Influence Radius (VD method): {influence_radius:.4f} pc',
+        f'Influence Radius (ME method): {r2:.4f} pc',
+        f'Half mass radius: {half_mass_radius:.4f} pc'
+    ])
+    
+    # Update the legend with custom star type labels and additional elements
+    plt.legend(handles=handles[:len(legend_labels) + 3], labels=legend_labels + labels[len(legend_labels):], title='Star Type with Counts', loc='upper left', bbox_to_anchor=(1, 1))
+        
     plt.title(f'Distribution of Masses: {x_column} vs {y_column}')
     plt.xlabel(x_column)
     plt.ylabel(y_column)
