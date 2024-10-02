@@ -51,7 +51,7 @@ def save_data(df, filename):
             f.write(format_row(row.values) + '\n')
 
     print(f"Data saved to {file_path}")
-#df = df[(df['starType'] == 14)]
+df = df[(df['starType'] == 14)]
 
 df['MassChange'] = df['massNew[Msun]'] - df['massOld[Msun](10)']
 mass_increase_points = df[df['MassChange'] > 0.]
