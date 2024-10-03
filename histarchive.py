@@ -68,7 +68,7 @@ for file_path in glob.glob(file_path):
                    f.write(format_row(row.values) + '\n')
     
            print(f"Data saved to {file_path}")
-       #df = df[(df['starType'] == 14)]
+       df = df[(df['starType'] == 14)]
     
        df['MassChange'] = df['massNew[Msun](10)'] - df['massOld[Msun]']
        mass_increase_points = df[df['MassChange'] > 0.]
