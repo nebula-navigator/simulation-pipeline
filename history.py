@@ -5,10 +5,21 @@ import seaborn as sns
 import numpy as np
 import random
 import os
+from sanitization import validate_file_path
+from utils import extract_file_name
+try:
+    while True:
+        file_path = input("Enter path to history files (with extension): ")
+        try:
+            validate_file_path(file_path)
+            break
+        except ValueError as e:
+            print(e)
+except Exception as e:
+    print(e)
 
-file_path = input("Please enter the path to the history file: ")
 
-history_basename = os.path.splitext(os.path.basename(file_path))[0]
+history_basename = extract_file_name(file_path).split('.')[0]
 
 with open(file_path, 'r') as file:
     history_content = file.readlines()
