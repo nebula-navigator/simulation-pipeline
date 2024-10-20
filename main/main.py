@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import config
 
+
 from functions import (
     plot_histogram,
     plot_scatter,
@@ -29,10 +30,11 @@ from functions import (
     calculate_core_radius,
     calculate_half_mass_radius,
     decode_history,
-    get_cumulative_counts,
+    get_cumulative_counts, history
 )
 
 from functions.suggest_visualizations import suggest_visualizations
+from functions.history import history
 
 # Global dictionary to store dataframes
 data_dict = {}
@@ -81,7 +83,7 @@ def classify_stars(row):
 
 def load_data(file_path):
     """Load data from a file and store it in the global dictionary."""
-    file_key = os.path.basename(file_path)  # Use filename as the key
+    file_key = os.path.basename(file_path) 
     data = pd.read_csv(file_path, names=column_names, delim_whitespace=True)
     config.data = data
 
@@ -122,6 +124,7 @@ def load_data(file_path):
         data[f'posz'] = rpz
         
     
+    
     include = 'both'  
     cumulative_df = get_cumulative_counts(include)
     
@@ -129,8 +132,7 @@ def load_data(file_path):
     print("\nCumulative Counts DataFrame:")
     print(cumulative_df)
     
-    # star_type column based on ik1 and ik2
-    data['star_type'] = data.apply(classify_stars, axis=1)
+    list_columns(data)
     
     # Storing the dataframe in the global dictionary
     data_dict[file_key] = data
@@ -169,51 +171,78 @@ def list_columns(data):
     for index, name in enumerate(data.columns, start=1):
         print(f"{index}. {name}")
 
+
 def main_menu():
     global current_data
-    while True:
-        print("\nMain Menu:")
-        print("1. Load Data Files")
-        print("2. List Loaded Data Files")
-        print("3. Select Data File for Operations")
-        print("4. Suggest Visualization Types")
-        print("5. Exit")
+    exit_program = False  
+
+    while not exit_program:
+        print("\nChoose Analysis Type:")
+        print("1. History File Analysis")
+        print("2. Snap File Analysis")
+        print("3. Exit")
         
-        choice = input("Enter your choice (1-5): ")
+        analysis_choice = input("Enter your choice (1, 2, or 3): ")
         
-        if choice == '1':
-            file_input = input("Enter the paths to data files, separated by commas: ")
-            file_paths = [path.strip() for path in file_input.split(',')]
-            for file_path in file_paths:
-                if os.path.exists(file_path):
-                    file_key = load_data(file_path)
-                    print(f"Data loaded successfully from: {file_path}")
+        if analysis_choice == '1':
+            print("Opening history file analysis...")
+            history()  
+            print("History file analysis complete. Redirecting to analysis menu...")
+            continue  
+
+        elif analysis_choice == '2':
+            print("Proceeding to snap file analysis menu.")
+            while True:
+                print("\nMain Menu:")
+                print("1. Load Data Files")
+                print("2. List Loaded Data Files")
+                print("3. Select Data File for Operations")
+                print("4. Suggest Visualization Types")
+                print("5. Return to Analysis Menu")
+                
+                choice = input("Enter your choice (1-5): ")
+                
+                if choice == '1':
+                    file_input = input("Enter the paths to data files, separated by commas: ")
+                    file_paths = [path.strip() for path in file_input.split(',')]
+                    for file_path in file_paths:
+                        if os.path.exists(file_path):
+                            file_key = load_data(file_path)
+                            print(f"Data loaded successfully from: {file_path}")
+                        else:
+                            print(f"File not found: {file_path}")
+                    print("\nData loading complete.")
+                
+                    if data_dict:
+                        print("\nPlease select a data file to work with:")
+                        select_data_file()
+                        
+                elif choice == '2':
+                    list_data_files()
+                elif choice == '3':
+                    file_name = select_data_file()
+                    if file_name:
+                        data = data_dict[file_name]  
+                        list_columns(current_data)
+                elif choice == '4':
+                    if current_data is not None:
+                        suggest_visualizations(current_data)
+                    else:
+                        print("No data file selected. Please load and select a data file first.")
+                elif choice == '5':
+                    print("Returning to Analysis Menu.")
+                    break 
                 else:
-                    print(f"File not found: {file_path}")
-            print("\nData loading complete.")
+                    print("Invalid choice. Please enter a number between 1 and 5.")
         
-            if data_dict:
-                print("\nPlease select a data file to work with:")
-                select_data_file()
-                
-        elif choice == '2':
-            list_data_files()
-        elif choice == '3':
-            file_name = select_data_file()
-            if file_name:
-                
-                data = data_dict[file_name]  # Use the selected file's data
-                list_columns(current_data)
-        elif choice == '4':
-            if current_data is not None:
-                suggest_visualizations(current_data)
-            else:
-                print("No data file selected. Please load and select a data file first.")
-        elif choice == '5':
+        elif analysis_choice == '3':
             print("Exiting the program.")
-            break
+            exit_program = True 
         else:
-            print("Invalid choice. Please enter a number between 1 and 5.")
+            print("Invalid choice.")
+
+    print("Come back soon. Let me know when your IMBH is ripe enough to be analyzed!")
+
 
 
 
