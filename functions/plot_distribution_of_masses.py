@@ -78,7 +78,7 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
     custom_style = {star_type: marker for star_type, marker in zip(star_type_order, extended_markers)}
 
     # Custom palette for the plot
-    palette = sns.color_palette("viridis", len(star_type_order))
+    palette = palette = sns.color_palette("tab10", len(star_type_order))  # Use 'tab10' or 'Set1' for discrete categories
     custom_palette = {star_type: color for star_type, color in zip(star_type_order, palette)}
     
     ## Scatter plot

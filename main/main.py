@@ -125,6 +125,9 @@ def load_data(file_path):
         
     
     
+    # star_type column based on ik1 and ik2
+    data['star_type'] = data.apply(classify_stars, axis=1)
+    
     include = 'both'  
     cumulative_df = get_cumulative_counts(include)
     
