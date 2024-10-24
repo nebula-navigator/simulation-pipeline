@@ -5,6 +5,10 @@ import seaborn as sns
 import numpy as np
 import random
 import os
+import warnings
+
+warnings.filterwarnings("ignore", message="No artists with labels found to put in legend")
+warnings.filterwarnings("ignore", message="No artists with labels found to put in legend")
 
 file_path = input("Please enter the path to the history file: ")
 
@@ -69,11 +73,11 @@ axs[0, 0].set_facecolor('black')
 axs[0, 0].grid(True, color='white', linestyle='-', linewidth=0.5) 
 
 
-legend = axs[0, 0].legend(frameon=True)
-legend.get_frame().set_facecolor('gray')  
-legend.get_frame().set_edgecolor('white')  
-plt.setp(legend.get_texts(), color='white')  
+
+
 axs[0, 0].plot(df['time[Myr]'], df['massNew[Msun]'], label='Mass Evolution', color='w')
+
+ 
 
 ordered_event_types = ['BIN_STAR', 'SIN_EVOL', 'COLLISION', 'BIN_FORM', 'BIN_EVOL', 'BIN_BIN']
 
@@ -100,6 +104,10 @@ for event_type in ordered_event_types + additional_event_types:
     axs[0, 0].scatter(event_points['time[Myr]'], event_points['massNew[Msun]'],
                       marker=marker_styles[event_type], label=f'{event_type}', s=5, zorder=5)
 
+legend = axs[0, 0].legend(frameon=True)
+legend.get_frame().set_facecolor('gray')  
+legend.get_frame().set_edgecolor('white')  
+plt.setp(legend.get_texts(), color='white') 
 
 comp_type_14_points = df[(df['starType'] == 14) & (df['compType'] == 14)]
 
@@ -452,7 +460,7 @@ axs[2, 1].set_ylabel("Frequency")
 plt.tight_layout()
 
 fig, axs = plt.subplots(figsize=(10, 6))
-filtered_df2['MassChange'] = filtered_df2['massNew[Msun]'] - filtered_df2['massOld[Msun](10)']
+filtered_df2.loc['MassChange'] = filtered_df2['massNew[Msun]'] - filtered_df2['massOld[Msun](10)']
 mass_increase_points2 = filtered_df2[filtered_df2['MassChange'] > 0.]
 
 axs.set_facecolor('black')
@@ -497,6 +505,8 @@ color_palette = [
     'olivedrab'      # #6B8E23
 ]
 
+unique_categories = len(mass_increase_points2['compType'].unique())
+palette = color_palette("husl", unique_categories)  # Make sure the palette size matches the number of unique categories
 
 
 
@@ -507,7 +517,7 @@ sns.scatterplot(data=mass_increase_points2,
                 x='time[Myr]', y='massNew[Msun]',
                 hue='compType',  
                 style='lineType(1)',  
-                palette=color_palette,  
+                palette=palette,  
                 s=50,alpha=0.7,zorder=2,legend='full')  
 
 

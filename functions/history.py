@@ -5,9 +5,20 @@ import seaborn as sns
 import numpy as np
 import random
 import os
+import warnings
+import config
+import logging
+
+
+
+logging.getLogger().setLevel(logging.CRITICAL)
+
+
 
 
 def history():
+    
+    
 
     file_path = input("Please enter the path to the history file: ")
     
@@ -311,7 +322,7 @@ def history():
     axs[0, 0].set_ylabel("Frequency")
     axs[0, 0].tick_params(axis='x', rotation=45)
     
-    filtered_df2 = df[df['mergMass1(26)'] > 0.001]
+    filtered_df2 = df[df['mergMass1(26)'] > 0.001].copy()
     save_data(filtered_df2,'mergers.dat')
     
     event_counts_3 = filtered_df2['compType'].value_counts()
@@ -459,8 +470,9 @@ def history():
     plt.savefig('subplots2.png', dpi=300)
     
     fig, axs = plt.subplots(figsize=(10, 6))
-    filtered_df2['MassChange'] = filtered_df2['massNew[Msun]'] - filtered_df2['massOld[Msun](10)']
-    mass_increase_points2 = filtered_df2[filtered_df2['MassChange'] > 0.]
+    filtered_df2.loc[:,'MassChange'] = filtered_df2['massNew[Msun]'] - filtered_df2['massOld[Msun](10)']
+    mass_increase_points2 = filtered_df2[filtered_df2['MassChange'] > 0.].copy()
+    mass_increase_points2['stellar_type'] = mass_increase_points2['compType'].map(config.k_values)
     
     axs.set_facecolor('black')
     
@@ -474,7 +486,9 @@ def history():
     plt.setp(legend.get_texts(), color='white')  
     axs.plot(filtered_df2['time[Myr]'], filtered_df2['massNew[Msun]'], color='w')
     
-    ordered_stellar_types = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    # Map compType values to corresponding stellar type names
+    filtered_df2.loc[:,'stellar_type'] = filtered_df2['compType'].map(config.k_values)
+
     
     marker_styles = {
         'COLLISION': 'o',  # Circle
@@ -482,10 +496,10 @@ def history():
         'BIN_BIN': 's',    # Square
         'BIN_EVOL': '+'    # Plus
     }
-    unique_stellar_types = filtered_df2['compType'].unique()
+    unique_stellar_types = filtered_df2['stellar_type'].unique()
     
-    
-    
+
+
     color_palette = [
         'crimson',       # #DC143C
         'royalblue',     # #4169E1
@@ -500,23 +514,21 @@ def history():
         'slategray',     # #708090
         'peru',          # #CD853F
         'steelblue',     # #4682B4
-        'sandybrown',     # #F4A460
-        'olivedrab'      # #6B8E23
+        'sandybrown',    # #F4A460
+        #'olivedrab'      # #6B8E23
     ]
     
     
-    
-    
-    color_dict = {stellar_type: color_palette[i] for i, stellar_type in enumerate(ordered_stellar_types)}
-    
+    color_dict = {stellar_type: color_palette[i] for i, stellar_type in enumerate(unique_stellar_types)}
+
     
     sns.scatterplot(data=mass_increase_points2,
                     x='time[Myr]', y='massNew[Msun]',
-                    hue='compType',  
+                    hue='stellar_type',  # Use the new stellar type column for hue
                     style='lineType(1)',  
-                    palette=color_palette,  
-                    s=50,alpha=0.7,zorder=2,legend='full')  
-    
+                    palette=color_palette,  # Pass the sliced palette
+                    s=50, alpha=0.7, zorder=2, legend='full')
+
     
     
     
