@@ -78,9 +78,13 @@ def history():
     
     
     axs[0, 0].set_facecolor('black')
-    
+    axs[0, 0].set_facecolor('black')
+    axs[1, 1].set_facecolor('black')
+    axs[1, 1].set_facecolor('black')
     
     axs[0, 0].grid(True, color='white', linestyle='-', linewidth=0.5) 
+    axs[1, 1].grid(True, color='white', linestyle='-', linewidth=0.5) 
+    
     
     
     legend = axs[0, 0].legend(frameon=True)
@@ -88,6 +92,12 @@ def history():
     legend.get_frame().set_edgecolor('white')  
     plt.setp(legend.get_texts(), color='white')  
     axs[0, 0].plot(df['time[Myr]'], df['massNew[Msun]'], label='Mass Evolution', color='w')
+    
+    legend = axs[1, 1].legend(frameon=True)
+    legend.get_frame().set_facecolor('gray')  
+    legend.get_frame().set_edgecolor('white')  
+    plt.setp(legend.get_texts(), color='white')  
+    axs[1, 1].plot(df['time[Myr]'], df['massNew[Msun]'], label='Mass Evolution', color='w')
     
     ordered_event_types = ['BIN_STAR', 'SIN_EVOL', 'COLLISION', 'BIN_FORM', 'BIN_EVOL', 'BIN_BIN']
     
@@ -113,22 +123,29 @@ def history():
         event_points = mass_increase_points[mass_increase_points['lineType(1)'] == event_type]
         axs[0, 0].scatter(event_points['time[Myr]'], event_points['massNew[Msun]'],
                           marker=marker_styles[event_type], label=f'{event_type}', s=5, zorder=5)
-    
+        axs[1, 1].scatter(event_points['time[Myr]'], event_points['massNew[Msun]'],
+                          marker=marker_styles[event_type], label=f'{event_type}', s=5, zorder=5)
     
     comp_type_14_points = df[(df['starType'] == 14) & (df['compType'] == 14)]
     
     
     axs[0, 0].scatter(comp_type_14_points['time[Myr]'], comp_type_14_points['massNew[Msun]'],
-                      marker='x', color='yellow', s=10, label='BH-BH', zorder=10)  # s=50 for larger cross marks
-    
-    axs[0, 0].set_title("Mass Evolution Over Time with Significant Events")
+                      marker='x', color='yellow', s=10, label='BH-BH', zorder=10)
+    axs[1, 1].scatter(comp_type_14_points['time[Myr]'], comp_type_14_points['massNew[Msun]'],
+                      marker='x', color='yellow', s=10, label='BH-BH', zorder=10)  
+    axs[0, 0].set_title("Mass Evolution Over Time with Significant Events (0-2Gyr)")
     axs[0, 0].set_xlabel("Time (Myr)")
     axs[0, 0].set_ylabel("Mass (Msun)")
     axs[0, 0].set_xlim([0, 2000])
     axs[0, 0].legend(loc='upper left', bbox_to_anchor=(1, 1))
     
+    axs[1, 1].set_title("Mass Evolution Over Time with Significant Events (Entire Evolution)")
+    axs[1, 1].set_xlabel("Time (Myr)")
+    axs[1, 1].set_ylabel("Mass (Msun)")
+    axs[1, 1].legend(loc='upper left', bbox_to_anchor=(1, 1))
+    
     def on_click(event):
-        if event.inaxes == axs[0, 0]:  
+        if event.inaxes == axs[0, 0] or event.inaxes == axs[1, 1] :  
             # Getting the index of the closest point
             closest_index = ((mass_increase_points['time[Myr]'] - event.xdata)**2 + 
                              (mass_increase_points['massNew[Msun]'] - event.ydata)**2).idxmin()
@@ -177,17 +194,18 @@ def history():
     
     
     axs[1, 0].plot(df['time[Myr]'], df['r[pc]'], label='r', color='r')
-    axs[1, 0].set_title("Position Evolution Over Time")
+    axs[1, 0].set_title("IMBH Position Change Over Time")
     axs[1, 0].set_xlabel("Time (Myr)")
+    axs[1, 0].set_xscale('log')
     axs[1, 0].set_ylabel("r [pc]")
     axs[1, 0].legend()
     
     
-    axs[1, 1].plot(df['time[Myr]'], df['eNew'], label='eNew', color='r')
-    axs[1, 1].set_title("Orbital Eccentricity Evolution Over Time")
-    axs[1, 1].set_xlabel("Time (Myr)")
-    axs[1, 1].set_ylabel("Orbital Eccentricity")
-    axs[1, 1].legend()
+    # axs[1, 1].plot(df['time[Myr]'], df['eNew'], label='eNew', color='r')
+    # axs[1, 1].set_title("Orbital Eccentricity Evolution Over Time")
+    # axs[1, 1].set_xlabel("Time (Myr)")
+    # axs[1, 1].set_ylabel("Orbital Eccentricity")
+    # axs[1, 1].legend()
     
     
     filtered_df = df[df['encCase'] != 0]
@@ -317,10 +335,11 @@ def history():
     
     event_counts_2 = filtered_df1['lineType(1)'].value_counts()
     sns.barplot(x=event_counts_2.index, y=event_counts_2.values, ax=axs[0, 0])
-    axs[0, 0].set_title("Mergers")
+    axs[0, 0].set_title("Mergers Events")
     axs[0, 0].set_xlabel("Event Type")
     axs[0, 0].set_ylabel("Frequency")
-    axs[0, 0].tick_params(axis='x', rotation=45)
+    axs[0, 0].set_yscale('log')
+    axs[0, 0].tick_params(axis='x')
     
     filtered_df2 = df[df['mergMass1(26)'] > 0.001].copy()
     save_data(filtered_df2,'mergers.dat')
@@ -356,19 +375,54 @@ def history():
     
     print("History files for GW candidates have been generated")
     
-    
-    random_idComp = random.choice(filtered_df_gw['idComp'].unique())
-    
-    
-    cand = df[df['idComp'] == random_idComp]
-    
-    
-    axs[1, 0].plot(cand['aOld[Rsun]'], cand['eOld(16)'])
+        
+    filtered_df4 = filtered_df2.copy()
+    all_events = sorted(filtered_df2['lineType(1)'].unique())
+    grouped = filtered_df2.groupby(['time[Myr]', 'lineType(1)']).size().unstack(fill_value=0).reindex(columns=all_events, fill_value=0)
     
     
-    axs[1, 0].set_title(f"Evolution of semi-major axis for candidate {random_idComp}")
-    axs[1, 0].set_xlabel("Semi Major Axis (aOld)")
-    axs[1, 0].set_ylabel("Orbital Eccentricity (eOld)")
+    cumulative_counts_df = grouped.cumsum()
+    cumulative_counts_df = cumulative_counts_df.sort_index()
+    
+    
+    x_values = cumulative_counts_df.index  
+    for event in all_events:
+        y_values = cumulative_counts_df[event]
+        if y_values.sum() > 0: 
+            if (grouped[event] > 0).any():
+                last_encounter_time = grouped[event][grouped[event] > 0].index[-1]
+            else:
+                last_encounter_time = x_values[0]
+            
+            
+            extended_x = np.append(x_values[x_values <= last_encounter_time], last_encounter_time + (x_values[1] - x_values[0]))
+            extended_y = np.append(y_values[x_values <= last_encounter_time], 0)
+            
+            axs[1, 0].plot(extended_x, extended_y, label=f'{event}')
+
+
+    
+    axs[1, 0].set_title("Merger event counts with IMBH over Time")
+    axs[1, 0].set_xlabel("Time (Myr)")
+    axs[1, 0].set_ylabel("Cumulative Count")
+    axs[1, 0].legend(loc='upper left', bbox_to_anchor=(1, 1))
+    axs[1, 0].grid(True)
+    axs[1, 0].set_yscale('log')
+    plt.tight_layout()
+    
+
+    # random_idComp = random.choice(filtered_df_gw['idComp'].unique())
+    
+    
+    # cand = df[df['idComp'] == random_idComp]
+    
+    
+    # axs[1, 0].plot(cand['aOld[Rsun]'], cand['eOld(16)'])
+    
+    
+    # axs[1, 0].set_title(f"Evolution of semi-major axis for candidate {random_idComp}")
+    # axs[1, 0].set_xlabel("Semi Major Axis (aOld)")
+    # axs[1, 0].set_ylabel("Orbital Eccentricity (eOld)")
     
     
     unique_line_types = filtered_df2['lineType(1)'].unique()
@@ -460,8 +514,9 @@ def history():
     
     event_counts_3 = filtered_df3['lineType(1)'].value_counts()
     sns.barplot(x=event_counts_3.index, y=event_counts_3.values, ax=axs[2, 1])
-    axs[2, 1].set_title("BH-BH Mergers")
+    axs[2, 1].set_title("IMBH-Compact Object Mergers")
     axs[2, 1].set_xlabel("Event Type")
+    axs[2, 1].set_yscale('log')
     axs[2, 1].set_ylabel("Frequency")
     
     
