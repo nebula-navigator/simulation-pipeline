@@ -3,7 +3,7 @@
 
 **Introduction:**
 
-MOCCA-Forge is a simulation data pipeline designed to work with MOnte Carlo Cluster simulAtor (MOCCA) outputs. Currently, the script can analyze, process and dump desired data outputs using snapshot and history file outputs from MOCCA. MOCCA-Forge takes 
+MOCCA-BH-Forge is a simulation data pipeline designed to work with MOnte Carlo Cluster simulAtor (MOCCA) outputs. Currently, the pipeline can analyze, process and dump desired data outputs using snapshot and history file outputs from MOCCA. MOCCA-BH-Forge takes 
 history or snapshot files and enables the user to plot and save data subsets of their choice.
 
 **Installation**
@@ -27,7 +27,13 @@ cd simulation-pipeline
 conda install --file requirements.txt
 
 ```
-You can see the packages required to run the pipeline in simulation-pipeline/requirements.txt and install them through pip , if you are not in a conda environment.
+If you are not in a conda environment, use:
+
+``bash
+
+pip install -r requirements.txt
+
+```
 
 **Quickstart Guide with Examples**
 
