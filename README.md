@@ -25,14 +25,6 @@ cd simulation-pipeline
 ```bash
 
 conda install --file requirements.txt
-
-```
-If you are not in a conda environment, use:
-
-``bash
-
-pip install -r requirements.txt
-
 ```
 
 **Quickstart Guide with Examples**
@@ -159,6 +151,7 @@ python -m main.main
 
    ![bhdist100myr](https://github.com/user-attachments/assets/1b185a4c-03d1-4a1e-9761-079409af9122)
 
+   ![esdist.png](/esdist.png)
  
 
 
