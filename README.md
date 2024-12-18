@@ -157,7 +157,12 @@ python -m main.main
 
    ![Figure5](https://github.com/user-attachments/assets/466c99a8-c3ba-4ba1-a519-ea4c0869d815)
 
-   ![Figure6,png](https://github.com/user-attachments/assets/d8311f6c-724f-4de1-a3bc-10229740de00)
+   ![bhdist100myr](https://github.com/user-attachments/assets/1b185a4c-03d1-4a1e-9761-079409af9122)
+
+ 
+
+
+
 
 
 
