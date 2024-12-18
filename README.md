@@ -143,11 +143,11 @@ python -m main.main
 
    You can create any customized plot using visualization options. Here are a few examples of plots that can be generated with MOCCA-BH-Forge.
 
-   <!-- Interactive Plot -->
+<!-- Interactive Plot -->
 <div style="margin-top: 20px; text-align: center;">
   <figure style="display: inline-block; text-align: center;">
     <iframe src="/scatter_plot.html" style="width: 100%; max-width: auto; height: auto; border: none;"></iframe>
-    <figcaption style="margin-top: 10px; font-size: 1.2em; color: #555;">                    Projected stellar distribution of a massive globular cluster (Z~0.0005,IMF= 0.08 Msun to 150 Msun, N=2000k, bf=10%, rh = 0.5, rh = 2.5 pc, Rgc= 5 kpc)</figcaption>
+    <figcaption style="margin-top: 10px; font-size: 1.2em; color: #555;">Projected stellar distribution of a massive globular cluster (Z~0.0005,IMF= 0.08 Msun to 150 Msun, N=2000k, bf=10%, rh = 0.5, rh = 2.5 pc, Rgc= 5 kpc)</figcaption>
   </figure>
 </div>
 
