@@ -35,6 +35,7 @@ from functions import (
 
 from functions.suggest_visualizations import suggest_visualizations
 from functions.history import history
+from functions.historyplots import historyplots
 
 # Global dictionary to store dataframes
 data_dict = {}
@@ -183,7 +184,8 @@ def main_menu():
         print("\nChoose Analysis Type:")
         print("1. History File Analysis")
         print("2. Snap File Analysis")
-        print("3. Exit")
+        print("3. History Plot Generator")
+        print("4. Exit")
         
         analysis_choice = input("Enter your choice (1, 2, or 3): ")
         
@@ -237,8 +239,11 @@ def main_menu():
                     break 
                 else:
                     print("Invalid choice. Please enter a number between 1 and 5.")
-        
         elif analysis_choice == '3':
+            historyplots()
+            print("Plots Generated...Redirecting")
+            continue
+        elif analysis_choice == '4':
             print("Exiting the program.")
             exit_program = True 
         else:

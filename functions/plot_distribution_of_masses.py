@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.express as px
 import numpy as np
 import pandas as pd
 from .decode_history import decode_history
@@ -91,10 +92,29 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
         style=filtered_data['star_type'], 
         palette=custom_palette, 
         markers=custom_style,  
-        alpha=0.7,
+        alpha=0.1,
         hue_order=star_type_order, 
         style_order=star_type_order
     )
+    
+    fig = px.scatter(
+        filtered_data,
+        x=x_column,
+        y=y_column,
+        color='star_type',  
+        symbol='star_type',
+        opacity=0.9,
+        title="Projected stellar distribution of a massive globular cluster (Z~0.0005,IMF= 0.08 Msun to 150 Msun, N=2000k, bf=10%, rh = 0.5, rh = 2.5 pc, Rgc= 5 kpc)",
+        labels={x_column: "X [pc]", y_column: "Y [pc]"}, 
+        template="plotly_white",
+    )
+    
+    fig.update_traces(marker=dict(size=5)) 
+    
+    # Save as an interactive HTML file
+    fig.write_html("scatter_plot.html", include_plotlyjs="cdn", full_html=False)
+    print("Plot saved as scatter_plot.html")
+
 
     # Create labels with counts for the legend
     legend_labels = [f'{star_type} ({star_type_counts.get(star_type, 0)})' for star_type in star_type_order]

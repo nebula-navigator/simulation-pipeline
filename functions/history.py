@@ -8,6 +8,7 @@ import os
 import warnings
 import config
 import logging
+import os
 
 
 
@@ -325,8 +326,8 @@ def history():
     plt.tight_layout()
     
     plt.savefig('subplots1.png', dpi=300)
-
     
+
     
     fig, axs = plt.subplots(3, 2, figsize=(14, 10))
     axs.flatten()
@@ -523,6 +524,7 @@ def history():
     plt.tight_layout()
     
     plt.savefig('subplots2.png', dpi=300)
+    
     
     fig, axs = plt.subplots(figsize=(10, 6))
     filtered_df2.loc[:,'MassChange'] = filtered_df2['massNew[Msun]'] - filtered_df2['massOld[Msun](10)']

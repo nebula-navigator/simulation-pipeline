@@ -17,5 +17,6 @@ from .calculate_half_mass_radius import calculate_half_mass_radius
 from .decode_history import decode_history
 from .get_cumulative_counts import get_cumulative_counts
 from .history import history
+from .historyplots import historyplots
 # If you have more functions, import them here in the same way.
 
