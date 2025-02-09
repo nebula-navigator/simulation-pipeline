@@ -35,7 +35,7 @@ def history():
     if columns[0] == '#':
         columns[0] = 'lineType(1)'
     
-    df = pd.read_csv(file_path, delim_whitespace=True, skiprows=188, comment='#', names=columns)
+    df = pd.read_csv(file_path, sep='\s+', skiprows=188, comment='#', names=columns)
     
     print("DataFrame Head:")
     print(df)
@@ -71,37 +71,48 @@ def history():
     df['MassChange'] = df['massNew[Msun]'] - df['massOld[Msun](10)']
     mass_increase_points = df[df['MassChange'] > 0.]
     
-    sns.set(style="darkgrid")
+
     
     
+        # Filter and calculate mass change
+    df = df[df['starType'] == 14]
+    df['MassChange'] = df['massNew[Msun]'] - df['massOld[Msun](10)']
+    mass_increase_points = df[df['MassChange'] > 0.]
+    
+ 
+    
+  
     fig, axs = plt.subplots(3, 2, figsize=(14, 10))
-    axs.flatten()
+    
+   
+    ax_zoom = axs[0, 0]
+    ax_full = axs[1, 1]
+    
+
+    for ax in (ax_zoom, ax_full):
+        ax.set_facecolor('white')
+        ax.grid(True, color='black', linestyle='-', linewidth=0.5)
     
     
-    axs[0, 0].set_facecolor('black')
-    axs[0, 0].set_facecolor('black')
-    axs[1, 1].set_facecolor('black')
-    axs[1, 1].set_facecolor('black')
+    ax_zoom.plot(df['time[Myr]'], df['massNew[Msun]'],
+                 label='Mass Evolution', color='r')
+    ax_full.plot(df['time[Myr]'], df['massNew[Msun]'],
+                 label='Mass Evolution', color='r')
     
-    axs[0, 0].grid(True, color='white', linestyle='-', linewidth=0.5) 
-    axs[1, 1].grid(True, color='white', linestyle='-', linewidth=0.5) 
+   
+        
+    legend1 = ax_zoom.legend(frameon=True)
+    legend1.get_frame().set_facecolor('white')  
+    legend1.get_frame().set_edgecolor('gray')
+    plt.setp(legend1.get_texts(), color='black')
     
+    legend2 = ax_full.legend(frameon=True)
+    legend2.get_frame().set_facecolor('white')
+    legend2.get_frame().set_edgecolor('gray')
+    plt.setp(legend2.get_texts(), color='black')
     
-    
-    legend = axs[0, 0].legend(frameon=True)
-    legend.get_frame().set_facecolor('gray')  
-    legend.get_frame().set_edgecolor('white')  
-    plt.setp(legend.get_texts(), color='white')  
-    axs[0, 0].plot(df['time[Myr]'], df['massNew[Msun]'], label='Mass Evolution', color='w')
-    
-    legend = axs[1, 1].legend(frameon=True)
-    legend.get_frame().set_facecolor('gray')  
-    legend.get_frame().set_edgecolor('white')  
-    plt.setp(legend.get_texts(), color='white')  
-    axs[1, 1].plot(df['time[Myr]'], df['massNew[Msun]'], label='Mass Evolution', color='w')
-    
+  
     ordered_event_types = ['BIN_STAR', 'SIN_EVOL', 'COLLISION', 'BIN_FORM', 'BIN_EVOL', 'BIN_BIN']
-    
     marker_styles = {
         'BIN_STAR': 'o',
         'SIN_EVOL': 's',
@@ -112,48 +123,45 @@ def history():
     }
     
     unique_event_types = df['lineType(1)'].unique()
-    
     additional_event_types = [event for event in unique_event_types if event not in ordered_event_types]
-    
-    remaining_markers = ['v', '<', '>', '*', 'H', '+']  
+    remaining_markers = ['v', '<', '>', '*', 'H', '+']
     for i, event in enumerate(additional_event_types):
         marker_styles[event] = remaining_markers[i % len(remaining_markers)]
     
-    
+   
     for event_type in ordered_event_types + additional_event_types:
         event_points = mass_increase_points[mass_increase_points['lineType(1)'] == event_type]
-        axs[0, 0].scatter(event_points['time[Myr]'], event_points['massNew[Msun]'],
-                          marker=marker_styles[event_type], label=f'{event_type}', s=5, zorder=5)
-        axs[1, 1].scatter(event_points['time[Myr]'], event_points['massNew[Msun]'],
-                          marker=marker_styles[event_type], label=f'{event_type}', s=5, zorder=5)
+        ax_zoom.scatter(event_points['time[Myr]'], event_points['massNew[Msun]'],
+                        marker=marker_styles[event_type], label=f'{event_type}', s=4, zorder=2)
+        ax_full.scatter(event_points['time[Myr]'], event_points['massNew[Msun]'],
+                        marker=marker_styles[event_type], label=f'{event_type}', s=4, zorder=2)
     
-    comp_type_14_points = df[(df['starType'] == 14) & (df['compType'] == 14)]
+   
+    # comp_type_14_points = df[(df['starType'] == 14) & (df['compType'] == 14)]
+    # ax_zoom.scatter(comp_type_14_points['time[Myr]'], comp_type_14_points['massNew[Msun]'],
+    #                 marker='x', color='yellow', s=10, label='BH-BH', zorder=10)
+    # ax_full.scatter(comp_type_14_points['time[Myr]'], comp_type_14_points['massNew[Msun]'],
+    #                 marker='x', color='yellow', s=10, label='BH-BH', zorder=10)
     
+   
+    ax_zoom.set_title("Mass Evolution Over Time with Significant Events (0-2Gyr)")
+    ax_zoom.set_xlabel("Time (Myr)")
+    ax_zoom.set_ylabel("Mass (Msun)")
+    ax_zoom.set_xlim([0, 2000])
+    ax_zoom.legend(loc='upper left', bbox_to_anchor=(1, 1))
     
-    axs[0, 0].scatter(comp_type_14_points['time[Myr]'], comp_type_14_points['massNew[Msun]'],
-                      marker='x', color='yellow', s=10, label='BH-BH', zorder=10)
-    axs[1, 1].scatter(comp_type_14_points['time[Myr]'], comp_type_14_points['massNew[Msun]'],
-                      marker='x', color='yellow', s=10, label='BH-BH', zorder=10)  
-    axs[0, 0].set_title("Mass Evolution Over Time with Significant Events (0-2Gyr)")
-    axs[0, 0].set_xlabel("Time (Myr)")
-    axs[0, 0].set_ylabel("Mass (Msun)")
-    axs[0, 0].set_xlim([0, 2000])
-    axs[0, 0].legend(loc='upper left', bbox_to_anchor=(1, 1))
+    ax_full.set_title("Mass Evolution Over Time with Significant Events (Entire Evolution)")
+    ax_full.set_xlabel("Time (Myr)")
+    ax_full.set_ylabel("Mass (Msun)")
+    ax_full.legend(loc='upper left', bbox_to_anchor=(1, 1))
     
-    axs[1, 1].set_title("Mass Evolution Over Time with Significant Events (Entire Evolution)")
-    axs[1, 1].set_xlabel("Time (Myr)")
-    axs[1, 1].set_ylabel("Mass (Msun)")
-    axs[1, 1].legend(loc='upper left', bbox_to_anchor=(1, 1))
-    
+
     def on_click(event):
-        if event.inaxes == axs[0, 0] or event.inaxes == axs[1, 1] :  
-            # Getting the index of the closest point
-            closest_index = ((mass_increase_points['time[Myr]'] - event.xdata)**2 + 
+        if event.inaxes == ax_zoom or event.inaxes == ax_full:
+            # Find the index of the closest point
+            closest_index = ((mass_increase_points['time[Myr]'] - event.xdata)**2 +
                              (mass_increase_points['massNew[Msun]'] - event.ydata)**2).idxmin()
-    
-            
             event_info = mass_increase_points.loc[closest_index]
-    
             output_text = f"""
             Event Information:
             --------------------
@@ -176,23 +184,38 @@ def history():
             starType: {event_info['starType']}
             compType: {event_info['compType']}
             binType: {event_info['binType']}
-            
             """
             print(output_text)
     
-    
-    
+
     fig.canvas.mpl_connect('button_press_event', on_click)
     
     
-    
+    import matplotlib.patches as mpatches
+   
+
     event_counts = df['lineType(1)'].value_counts()
-    sns.barplot(x=event_counts.index, y=event_counts.values, ax=axs[0, 1])
+    palette = sns.color_palette("Set1", n_colors=len(event_counts.index))
+    sns.barplot(
+        x=event_counts.index,
+        y=event_counts.values,
+        ax=axs[0, 1],
+        hue=event_counts.index,   
+        palette=palette,
+        dodge=False,
+        legend=False
+    )
     axs[0, 1].set_title("Event Type Frequency")
     axs[0, 1].set_xlabel("Event Type")
     axs[0, 1].set_ylabel("Frequency")
     axs[0, 1].tick_params(axis='x', rotation=45)
-    
+    handles = [
+        mpatches.Patch(color=palette[i], label=str(count))
+        for i, count in enumerate(event_counts.values)
+    ]
+    axs[0, 1].legend(handles=handles, loc='upper left', bbox_to_anchor=(1, 1))
+
+  
     
     axs[1, 0].plot(df['time[Myr]'], df['r[pc]'], label='r', color='r')
     axs[1, 0].set_title("IMBH Position Change Over Time")
@@ -322,6 +345,7 @@ def history():
     #axs[2, 1].set_title("Encounter Stats")
     
     
+    plt.suptitle("IMBH MASS EVOLUTON ANALYSIS", fontsize=16)
     
     plt.tight_layout()
     
@@ -335,22 +359,48 @@ def history():
     filtered_df1 = df[df['mergMass1(26)'] > 0.001]
     
     event_counts_2 = filtered_df1['lineType(1)'].value_counts()
-    sns.barplot(x=event_counts_2.index, y=event_counts_2.values, ax=axs[0, 0])
+    x=event_counts_2
+    hue=x
+    sns.barplot(x=event_counts_2.index, y=event_counts_2.values, ax=axs[0, 0],palette="Set1",hue=hue)
     axs[0, 0].set_title("Mergers Events")
     axs[0, 0].set_xlabel("Event Type")
     axs[0, 0].set_ylabel("Frequency")
     axs[0, 0].set_yscale('log')
     axs[0, 0].tick_params(axis='x')
+    axs[0, 0].legend(loc='upper left', bbox_to_anchor=(1, 1))
+    
+    
     
     filtered_df2 = df[df['mergMass1(26)'] > 0.001].copy()
     save_data(filtered_df2,'mergers.dat')
     
     event_counts_3 = filtered_df2['compType'].value_counts()
-    sns.barplot(x=event_counts_3.index, y=event_counts_3.values, ax=axs[0, 1])
+    x=event_counts_3
+    hue=x
+    color_palette = [
+        'crimson',       # #DC143C
+        'royalblue',     # #4169E1
+        'goldenrod',     # #DAA520
+        'mediumseagreen',# #3CB371
+        'tomato',        # #FF6347
+        'slateblue',     # #6A5ACD
+        'darkorange',    # #FF8C00
+        'mediumorchid',  # #BA55D3
+        'lightcoral',    # #F08080
+        'seagreen',      # #2E8B57
+        'slategray',     # #708090
+        'peru',          # #CD853F
+        'steelblue',     # #4682B4
+        'sandybrown'     # #F4A460
+    ]
+    
+    sns.barplot(x=event_counts_3.index, y=event_counts_3.values, ax=axs[0, 1],palette = color_palette,hue=hue)
     axs[0, 1].set_title("Mergers with each stellar type")
     axs[0, 1].set_xlabel("Stellar Type")
     axs[0, 1].set_ylabel("Frequency")
-    
+    axs[0, 1].tick_params(axis='x')
+    axs[0, 1].set_yscale('log')
+    axs[0, 1].legend(loc='upper left', bbox_to_anchor=(1, 1.2))
     
     filtered_df3 = filtered_df2[(filtered_df2['starType'] == 14) & (filtered_df2['compType'].isin([10,11,12,13, 14]))]
     filtered_df_gw = filtered_df3[filtered_df3['lineType(1)'] == 'BIN_EVOL']
@@ -412,26 +462,11 @@ def history():
     plt.tight_layout()
     
 
-    # random_idComp = random.choice(filtered_df_gw['idComp'].unique())
-    
-    
-    # cand = df[df['idComp'] == random_idComp]
-    
-    
-    # axs[1, 0].plot(cand['aOld[Rsun]'], cand['eOld(16)'])
-    
-    
-    # axs[1, 0].set_title(f"Evolution of semi-major axis for candidate {random_idComp}")
-    # axs[1, 0].set_xlabel("Semi Major Axis (aOld)")
-    # axs[1, 0].set_ylabel("Orbital Eccentricity (eOld)")
-    
-    
     unique_line_types = filtered_df2['lineType(1)'].unique()
     
     summary_table = {
         'Stellar Type': [],
     }
-    
     for line_type in unique_line_types:
         summary_table[line_type] = []
     
@@ -448,18 +483,43 @@ def history():
             summary_table[line_type].append(count)
             total_count += count
         
-    
         summary_table['Total Count'].append(total_count)
-    
+        
     summary_df = pd.DataFrame(summary_table)
     
-    axs[1, 1].axis('off')  
-    
+    axs[1, 1].axis('off')
     
     table_data = summary_df.values
     column_labels = summary_df.columns
-    axs[1, 1].table(cellText=table_data, colLabels=column_labels, loc='center')
-    save_data(summary_df,'mergersum.dat')
+    
+    table = axs[1, 1].table(
+        cellText=table_data,
+        colLabels=column_labels,
+        cellLoc='center',
+        loc='center'
+    )
+    
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    
+    # Scale the table to make it bigger (scale factors can be adjusted)
+    table.scale(1.5, 1.5)
+    
+    # Customize the table's appearance: header style and alternating row colors
+    for (row, col), cell in table.get_celld().items():
+        # Header row formatting
+        if row == 0:
+            cell.set_text_props(weight='bold', color='white')
+            cell.set_facecolor('#40466e')  # dark blue-gray header background
+        else:
+            # Alternate row colors for readability
+            if row % 2 == 0:
+                cell.set_facecolor('#f1f1f2')  # light gray
+            else:
+                cell.set_facecolor('white')
+    
+    # Save the data if needed
+    save_data(summary_df, 'mergersum.dat')
     
     
     
@@ -483,28 +543,31 @@ def history():
     
     
     cumulative_counts_df = cumulative_counts_df.sort_index()
-    
-    
     x_values = cumulative_counts_df.index
     
-    
-    for comptype in cumulative_counts_df.columns:
+ 
+    for i, comptype in enumerate(cumulative_counts_df.columns):
         y_values = cumulative_counts_df[comptype]
         
-       
+    
         if (grouped[comptype] > 0).any():
             last_encounter_time = grouped[comptype][grouped[comptype] > 0].index[-1]
         else:
-            last_encounter_time = x_values[0]  
+            last_encounter_time = x_values[0]
+        
+        
+        step = x_values[1] - x_values[0] if len(x_values) > 1 else 1
+        
+ 
+        extended_x = np.append(x_values[x_values <= last_encounter_time], last_encounter_time + step)
+        extended_y = np.append(y_values[x_values <= last_encounter_time], 0)
+        
+   
+        axs[2, 0].plot(extended_x, extended_y, 
+                       label=f'Comp Type {comptype}', 
+                       color=color_palette[i % len(color_palette)])
     
-    
-        extended_x = np.append(x_values[x_values <= last_encounter_time], last_encounter_time + (x_values[1] - x_values[0]))
-        extended_y = np.append(y_values[x_values <= last_encounter_time], 0)  
-    
-      
-        axs[2, 0].plot(extended_x, extended_y, label=f'Comp Type {comptype}')
-    
-    
+ 
     axs[2, 0].set_title("Mergers with Different Stellar Types Vs Time")
     axs[2, 0].set_xlabel("Time (Myr)")
     axs[2, 0].set_ylabel("Cumulative Count")
@@ -512,50 +575,70 @@ def history():
     axs[2, 0].grid(True)
     axs[2, 0].set_yscale('log')
     
+    plt.tight_layout()
     
-    event_counts_3 = filtered_df3['lineType(1)'].value_counts()
-    sns.barplot(x=event_counts_3.index, y=event_counts_3.values, ax=axs[2, 1])
+    
+
+
+  
+    event_counts_4 = filtered_df3['lineType(1)'].value_counts()
+    
+ 
+    palette = sns.color_palette("Set1", n_colors=len(event_counts_4.index))
+    
+  
+    sns.barplot(
+        x=event_counts_4.index,
+        y=event_counts_4.values,
+        ax=axs[2, 1],
+        hue=event_counts_4.index,
+        palette=palette,
+        dodge=False,
+        legend=False
+    )
+    
     axs[2, 1].set_title("IMBH-Compact Object Mergers")
     axs[2, 1].set_xlabel("Event Type")
-    axs[2, 1].set_yscale('log')
     axs[2, 1].set_ylabel("Frequency")
+    axs[2, 1].set_yscale('log')
     
+    
+    handles = [
+        mpatches.Patch(color=palette[i], label=str(count))
+        for i, count in enumerate(event_counts_4.values)
+    ]
+    
+    axs[2, 1].legend(handles=handles, loc='upper left', bbox_to_anchor=(1, 1))
+
+    plt.suptitle("IMBH MERGER PROFILE", fontsize=16)
     
     plt.tight_layout()
     
     plt.savefig('subplots2.png', dpi=300)
     
     
-    fig, axs = plt.subplots(figsize=(10, 6))
-    filtered_df2.loc[:,'MassChange'] = filtered_df2['massNew[Msun]'] - filtered_df2['massOld[Msun](10)']
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+   
+    filtered_df2 = filtered_df2.copy()
+    
+  
+    filtered_df2['MassChange'] = filtered_df2['massNew[Msun]'] - filtered_df2['massOld[Msun](10)']
     mass_increase_points2 = filtered_df2[filtered_df2['MassChange'] > 0.].copy()
+    
+  
     mass_increase_points2['stellar_type'] = mass_increase_points2['compType'].map(config.k_values)
+  
+    filtered_df2['stellar_type'] = filtered_df2['compType'].map(config.k_values)
     
-    axs.set_facecolor('black')
+   
+    ax.set_facecolor('white')
+    ax.grid(True, color='white', linestyle='-', linewidth=0.5)
     
+   
+    ax.plot(filtered_df2['time[Myr]'], filtered_df2['massNew[Msun]'], color='k')
     
-    axs.grid(True, color='white', linestyle='-', linewidth=0.5) 
-    
-    
-    legend = axs.legend(frameon=True)
-    legend.get_frame().set_facecolor('gray')  
-    legend.get_frame().set_edgecolor('white')  
-    plt.setp(legend.get_texts(), color='white')  
-    axs.plot(filtered_df2['time[Myr]'], filtered_df2['massNew[Msun]'], color='w')
-    
-    # Map compType values to corresponding stellar type names
-    filtered_df2.loc[:,'stellar_type'] = filtered_df2['compType'].map(config.k_values)
-
-    
-    marker_styles = {
-        'COLLISION': 'o',  # Circle
-        'BIN_STAR': 'x',   # 'x' Marker
-        'BIN_BIN': 's',    # Square
-        'BIN_EVOL': '+'    # Plus
-    }
-    unique_stellar_types = filtered_df2['stellar_type'].unique()
-    
-
 
     color_palette = [
         'crimson',       # #DC143C
@@ -571,71 +654,74 @@ def history():
         'slategray',     # #708090
         'peru',          # #CD853F
         'steelblue',     # #4682B4
-        'sandybrown',    # #F4A460
-        #'olivedrab'      # #6B8E23
+        'sandybrown'     # #F4A460
     ]
     
-    
-    color_dict = {stellar_type: color_palette[i] for i, stellar_type in enumerate(unique_stellar_types)}
-
-    
+   
+    unique_stellar_types = filtered_df2['stellar_type'].unique()
+    color_dict = {stellar_type: color_palette[i % len(color_palette)]
+                  for i, stellar_type in enumerate(unique_stellar_types)}
+ 
     sns.scatterplot(data=mass_increase_points2,
                     x='time[Myr]', y='massNew[Msun]',
-                    hue='stellar_type',  # Use the new stellar type column for hue
-                    style='lineType(1)',  
-                    palette=color_palette,  # Pass the sliced palette
-                    s=50, alpha=0.7, zorder=2, legend='full')
-
+                    hue='stellar_type',     
+                    style='lineType(1)',      
+                    palette=color_palette,    
+                    s=50, alpha=0.7, zorder=2,
+                    legend='full',
+                    ax=ax)                 
     
+  
+    ax.set_title("Mass Evolution in Mergers Over Time with Each Stellar Type")
+    ax.set_xlabel("Time (Myr)")
+    ax.set_ylabel("Mass (Msun)")
+    ax.set_xlim([0, 2000])
+    ax.grid(True,color='k')
     
+  
+    leg = ax.legend(loc='upper left', bbox_to_anchor=(1, 1), frameon=True)
+    leg.get_frame().set_facecolor('gray')
+    leg.get_frame().set_edgecolor('white')
+    plt.setp(leg.get_texts(), color='white')
     
-    axs.set_title("Mass Evolution in Mergers Over Time with Each Stellar Type")
-    axs.set_xlabel("Time (Myr)")
-    axs.set_ylabel("Mass (Msun)")
-    axs.set_xlim([0, 2000])
-    axs.legend(loc='upper left', bbox_to_anchor=(1, 1))
-    
+ 
     def on_click(event):
-        if event.inaxes == axs:  
-            # Getting the index of the closest point
-            closest_index = ((mass_increase_points2['time[Myr]'] - event.xdata)**2 + 
-                             (mass_increase_points2['massNew[Msun]'] - event.ydata)**2).idxmin()
-    
-            
+        if event.inaxes == ax:
+          
+            distances = (mass_increase_points2['time[Myr]'] - event.xdata)**2 + \
+                        (mass_increase_points2['massNew[Msun]'] - event.ydata)**2
+            closest_index = distances.idxmin()
             event_info = mass_increase_points2.loc[closest_index]
-    
             output_text = f"""
-            Event Information:
-            --------------------
-            EventType: {event_info['lineType(1)']}
-            EncId: {event_info['encId']}
-            EncCase: {event_info['encCase']}
-            Time (Myr): {event_info['time[Myr]']}
-            Summary: {event_info['Summary']}
-            Id6: {event_info['id(6)']}
-            IdComp: {event_info['idComp']}
-            IdCompNew: {event_info['idCompNew']}
-            IM: {event_info['im']}
-            MassOld (Msun): {event_info['massOld[Msun](10)']}
-            MassNew (Msun): {event_info['massNew[Msun]']}
-            MassChange: {event_info['MassChange']}
-            aOld (Rsun): {event_info['aOld[Rsun]']}
-            aNew (Rsun): {event_info['aNew[Rsun]']}
-            eOld: {event_info['eOld(16)']}
-            eNew: {event_info['eNew']}
-            starType: {event_info['starType']}
-            compType: {event_info['compType']}
-            binType: {event_info['binType']}
-            
+    Event Information:
+    --------------------
+    EventType: {event_info['lineType(1)']}
+    EncId: {event_info['encId']}
+    EncCase: {event_info['encCase']}
+    Time (Myr): {event_info['time[Myr]']}
+    Summary: {event_info['Summary']}
+    Id6: {event_info['id(6)']}
+    IdComp: {event_info['idComp']}
+    IdCompNew: {event_info['idCompNew']}
+    IM: {event_info['im']}
+    MassOld (Msun): {event_info['massOld[Msun](10)']}
+    MassNew (Msun): {event_info['massNew[Msun]']}
+    MassChange: {event_info['MassChange']}
+    aOld (Rsun): {event_info['aOld[Rsun]']}
+    aNew (Rsun): {event_info['aNew[Rsun]']}
+    eOld: {event_info['eOld(16)']}
+    eNew: {event_info['eNew']}
+    starType: {event_info['starType']}
+    compType: {event_info['compType']}
+    binType: {event_info['binType']}
             """
             print(output_text)
     
-    
-    
+
     fig.canvas.mpl_connect('button_press_event', on_click)
-    
+    plt.tight_layout()
     plt.savefig('mergers.png', dpi=300)
-    
     plt.show()
+
     
     return

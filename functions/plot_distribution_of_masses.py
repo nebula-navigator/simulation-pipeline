@@ -111,7 +111,7 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
     
     fig.update_traces(marker=dict(size=5)) 
     
-    # Save as an interactive HTML file
+   
     fig.write_html("scatter_plot.html", include_plotlyjs="cdn", full_html=False)
     print("Plot saved as scatter_plot.html")
 
