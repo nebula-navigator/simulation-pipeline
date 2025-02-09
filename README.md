@@ -43,16 +43,14 @@ python -m main.main
 
    Upon starting the pipeline the user is presented with self explanatory choices, if they want to work with snapshot file or a history file from MOCCA. Loading a history file generates a set of figures concerning the different merger stats of the object
    for which the history file has been generated.
- ![Figure1](https://github.com/user-attachments/assets/b93bf03e-c322-4a1c-bbe7-829647631e56)
+ ![subplots1](https://github.com/user-attachments/assets/4a0e4cc1-1556-4177-9ad5-6154d03d41a4)
 
- ![Figure2](https://github.com/user-attachments/assets/eac9d2c6-bf57-4595-aad0-d46b58590d0f)
+ ![subplots2](https://github.com/user-attachments/assets/ed3d1bca-ec48-4873-8ea0-6d78e06b23cf)
 
-![Figure3](https://github.com/user-attachments/assets/99b327a9-f8a9-4828-8f1f-6fe3566f1467)
+ ![mergers](https://github.com/user-attachments/assets/6d05c57b-102b-4af8-828b-c6313573ebba)
 
 
-
-   The plots with dark grid are made interactive so whenever a data point is clicked on one of them, all the necessary information about the event is displayed on the terminal. An example of such an interactive point showing
-   a blackhole-blackhole collision is shown below:
+   The plots are made interactive so whenever a data point is clicked on one of them, all the necessary information about the event is displayed on the terminal. An example of such an interactive point showing a blackhole-blackhole collision is shown below:
 
    ```bash
 
