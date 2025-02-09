@@ -43,9 +43,14 @@ python -m main.main
 
    Upon starting the pipeline the user is presented with self explanatory choices, if they want to work with snapshot file or a history file from MOCCA. Loading a history file generates a set of figures concerning the different merger stats of the object
    for which the history file has been generated.
- ![subplots1](https://github.com/user-attachments/assets/4a0e4cc1-1556-4177-9ad5-6154d03d41a4)
+<!-- ![subplots1](https://github.com/user-attachments/assets/4a0e4cc1-1556-4177-9ad5-6154d03d41a4)-->
 
- ![subplots2](https://github.com/user-attachments/assets/ed3d1bca-ec48-4873-8ea0-6d78e06b23cf)
+ <!--![subplots2](https://github.com/user-attachments/assets/ed3d1bca-ec48-4873-8ea0-6d78e06b23cf)-->
+
+ ![subplots1](https://github.com/user-attachments/assets/7c0cd17f-192a-43b9-a158-3511b52c0823)
+ 
+ ![subplots2](https://github.com/user-attachments/assets/10773759-7e97-44fa-9707-d353aa349d6c)
+
 
  ![mergers](https://github.com/user-attachments/assets/6d05c57b-102b-4af8-828b-c6313573ebba)
 
