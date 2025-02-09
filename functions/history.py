@@ -199,11 +199,11 @@ def history():
     sns.barplot(
         x=event_counts.index,
         y=event_counts.values,
-        ax=axs[0, 1],
-        hue=event_counts.index,   
-        palette=palette,
-        dodge=False,
-        legend=False
+        ax=axs[0, 1]
+        # hue=event_counts.index,   
+        # palette=palette,
+        # dodge=False,
+        # legend=False
     )
     axs[0, 1].set_title("Event Type Frequency")
     axs[0, 1].set_xlabel("Event Type")
@@ -213,7 +213,7 @@ def history():
         mpatches.Patch(color=palette[i], label=str(count))
         for i, count in enumerate(event_counts.values)
     ]
-    axs[0, 1].legend(handles=handles, loc='upper left', bbox_to_anchor=(1, 1))
+    #axs[0, 1].legend(handles=handles, loc='upper left', bbox_to_anchor=(1, 1))
 
   
     
@@ -361,13 +361,14 @@ def history():
     event_counts_2 = filtered_df1['lineType(1)'].value_counts()
     x=event_counts_2
     hue=x
-    sns.barplot(x=event_counts_2.index, y=event_counts_2.values, ax=axs[0, 0],palette="Set1",hue=hue)
+    #sns.barplot(x=event_counts_2.index, y=event_counts_2.values, ax=axs[0, 0],palette="Set1",hue=hue)
+    sns.barplot(x=event_counts_2.index, y=event_counts_2.values, ax=axs[0, 0])
     axs[0, 0].set_title("Mergers Events")
     axs[0, 0].set_xlabel("Event Type")
     axs[0, 0].set_ylabel("Frequency")
     axs[0, 0].set_yscale('log')
     axs[0, 0].tick_params(axis='x')
-    axs[0, 0].legend(loc='upper left', bbox_to_anchor=(1, 1))
+   # axs[0, 0].legend(loc='upper left', bbox_to_anchor=(1, 1))
     
     
     
@@ -394,13 +395,14 @@ def history():
         'sandybrown'     # #F4A460
     ]
     
-    sns.barplot(x=event_counts_3.index, y=event_counts_3.values, ax=axs[0, 1],palette = color_palette,hue=hue)
+    #sns.barplot(x=event_counts_3.index, y=event_counts_3.values, ax=axs[0, 1],palette = color_palette,hue=hue)
+    sns.barplot(x=event_counts_3.index, y=event_counts_3.values, ax=axs[0, 1])
     axs[0, 1].set_title("Mergers with each stellar type")
     axs[0, 1].set_xlabel("Stellar Type")
     axs[0, 1].set_ylabel("Frequency")
     axs[0, 1].tick_params(axis='x')
     axs[0, 1].set_yscale('log')
-    axs[0, 1].legend(loc='upper left', bbox_to_anchor=(1, 1.2))
+    #axs[0, 1].legend(loc='upper left', bbox_to_anchor=(1, 1.2))
     
     filtered_df3 = filtered_df2[(filtered_df2['starType'] == 14) & (filtered_df2['compType'].isin([10,11,12,13, 14]))]
     filtered_df_gw = filtered_df3[filtered_df3['lineType(1)'] == 'BIN_EVOL']
@@ -586,16 +588,19 @@ def history():
  
     palette = sns.color_palette("Set1", n_colors=len(event_counts_4.index))
     
-  
     sns.barplot(
         x=event_counts_4.index,
         y=event_counts_4.values,
-        ax=axs[2, 1],
-        hue=event_counts_4.index,
-        palette=palette,
-        dodge=False,
-        legend=False
-    )
+        ax=axs[2, 1])
+    # sns.barplot(
+    #     x=event_counts_4.index,
+    #     y=event_counts_4.values,
+    #     ax=axs[2, 1],
+    #     hue=event_counts_4.index,
+    #     palette=palette,
+    #     dodge=False,
+    #     legend=False
+    # )
     
     axs[2, 1].set_title("IMBH-Compact Object Mergers")
     axs[2, 1].set_xlabel("Event Type")
@@ -608,7 +613,7 @@ def history():
         for i, count in enumerate(event_counts_4.values)
     ]
     
-    axs[2, 1].legend(handles=handles, loc='upper left', bbox_to_anchor=(1, 1))
+    # axs[2, 1].legend(handles=handles, loc='upper left', bbox_to_anchor=(1, 1))
 
     plt.suptitle("IMBH MERGER PROFILE", fontsize=16)
     
