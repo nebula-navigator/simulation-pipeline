@@ -66,18 +66,16 @@ def history():
                 f.write(format_row(row.values) + '\n')
     
         print(f"Data saved to {file_path}")
-    df = df[(df['starType'] == 14)]
+    #df = df[(df['starType'] == 14)]
     
-    df['MassChange'] = df['massNew[Msun]'] - df['massOld[Msun](10)']
-    mass_increase_points = df[df['MassChange'] > 0.]
     
 
     
     
         # Filter and calculate mass change
-    df = df[df['starType'] == 14]
+   # df = df[df['starType'] == 14]
     df['MassChange'] = df['massNew[Msun]'] - df['massOld[Msun](10)']
-    mass_increase_points = df[df['MassChange'] > 0.]
+    mass_increase_points = df[df['MassChange'] != 0.]
     
  
     
@@ -208,6 +206,7 @@ def history():
     axs[0, 1].set_title("Event Type Frequency")
     axs[0, 1].set_xlabel("Event Type")
     axs[0, 1].set_ylabel("Frequency")
+    axs[0, 1].set_yscale('log')
     axs[0, 1].tick_params(axis='x', rotation=45)
     handles = [
         mpatches.Patch(color=palette[i], label=str(count))
@@ -630,7 +629,7 @@ def history():
     
   
     filtered_df2['MassChange'] = filtered_df2['massNew[Msun]'] - filtered_df2['massOld[Msun](10)']
-    mass_increase_points2 = filtered_df2[filtered_df2['MassChange'] > 0.].copy()
+    mass_increase_points2 = filtered_df2[filtered_df2['MassChange'] !=0].copy()
     
   
     mass_increase_points2['stellar_type'] = mass_increase_points2['compType'].map(config.k_values)
@@ -680,7 +679,7 @@ def history():
     ax.set_title("Mass Evolution in Mergers Over Time with Each Stellar Type")
     ax.set_xlabel("Time (Myr)")
     ax.set_ylabel("Mass (Msun)")
-    ax.set_xlim([0, 2000])
+   # ax.set_xlim([0, 2000])
     ax.grid(True,color='k')
     
   

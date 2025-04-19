@@ -92,7 +92,7 @@ def plot_distribution_of_masses(current_data,x_column, y_column):
         style=filtered_data['star_type'], 
         palette=custom_palette, 
         markers=custom_style,  
-        alpha=0.1,
+        alpha=0.7,
         hue_order=star_type_order, 
         style_order=star_type_order
     )
